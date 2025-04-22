@@ -8,15 +8,16 @@ class HttpBenchmark:
         self.params = SimpleNamespace(**params)
         self.db = db
 
-    def run_benchmark(self, connection_count=10, requests_count=1000, service_name="default"):
+    def run_benchmark(self, connection_count=10, requests_count=1000, http_type="http1", service_name="default"):
         cmd = [
             "bombardier",
             "-c", str(connection_count),
             "-n", str(requests_count),
-            self.params.server_url,
             "-l",
             "--print=r",
-            "--format=j"
+            "--format=j",
+            f"--{http_type}",
+            self.params.server_url
         ]
         print("Running benchmark...")
 
