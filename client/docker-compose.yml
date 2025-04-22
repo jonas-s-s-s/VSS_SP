@@ -1,0 +1,11 @@
+name: benchmark_client
+
+services:
+  benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - config.env
+    container_name: http_benchmark_client
+    restart: no

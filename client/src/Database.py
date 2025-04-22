@@ -1,0 +1,36 @@
+from types import SimpleNamespace
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
+from datetime import datetime, timezone
+
+
+class Database:
+    def __init__(self, params):
+        self.params = SimpleNamespace(**params)
+        self.client = InfluxDBClient(
+            url=self.params.influxdb_url,
+            token=self.params.influxdb_token,
+            org=self.params.influxdb_org
+        )
+        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+
+    def write_result_json(self, data, measurement="default_metrics", time=None):
+        result = data.get("result", {})
+        point = Point(measurement)
+
+        # Add time
+        if time is None:
+            time = datetime.now(tz=timezone.utc)
+        point = point.time(time)
+
+        # Remove nested fields
+        def flatten_and_add_fields(prefix, d):
+            for k, v in d.items():
+                key = f"{prefix}_{k}" if prefix else k
+                if isinstance(v, dict):
+                    flatten_and_add_fields(key, v)
+                else:
+                    point.field(key, v)
+
+        flatten_and_add_fields("", result)
+        self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
