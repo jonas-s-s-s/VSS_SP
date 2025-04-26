@@ -1,0 +1,82 @@
+openapi: 3.0.3
+info:
+  title: Benchmark server control API
+  version: 1.0.0
+  description: Benchmark server control API
+
+servers:
+  - url: https://localhost:8080/v1
+
+paths:
+  /services:
+    get:
+      summary: List all available benchmark frameworks
+      operationId: listServices
+      responses:
+        '200':
+          description: List of frameworks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items:
+                      type: string
+  /service:
+    get:
+      summary: Get the server's current running framework
+      operationId: getCurrentService
+      responses:
+        '200':
+          description: Current framework information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  currentService:
+                    type: string
+
+    put:
+      summary: Change the server's current framework
+      operationId: changeService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                serviceName:
+                  type: string
+              required:
+                - serviceName
+      responses:
+        '200':
+          description: Service changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid service name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+components:
+  schemas:
+    Service:
+      type: object
+      properties:
+        name:
+          type: string
