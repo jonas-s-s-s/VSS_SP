@@ -1,6 +1,8 @@
 import json
 import re
 import subprocess
+import threading
+
 import ApiServer as api
 import utils
 import asyncio
@@ -24,8 +26,10 @@ class BenchmarkController:
         if self.available_services:
             self.switch_to_service(self.available_services[0])
 
-        self.api_server = api.ApiServer(self.params.api_host, self.params.api_port, self)
-        self.api_server.run()
+        self.api_server = api.ApiServer(self.params.API_HOST, self.params.API_PORT, self)
+        flask_thread = threading.Thread(target=self.api_server.run)
+        flask_thread.daemon = True
+        flask_thread.start()
 
         try:
             asyncio.run(self.report_metrics())
@@ -37,7 +41,7 @@ class BenchmarkController:
         Loads the available benchmark services from the JSON config
         """
         try:
-            with open(self.params.json_path, 'r') as file:
+            with open(self.params.JSON_PATH, 'r') as file:
                 parsed_config = json.load(file)
                 self.available_services = [framework["name"] for framework in parsed_config["Frameworks"]]
         except Exception as e:
@@ -53,11 +57,12 @@ class BenchmarkController:
         if not image_result.stdout.strip():
             build_cmd = [
                 "docker", "build",
-                "-f", f"{self.params.docker_files_path}/{container_name}/Dockerfile",
+                "-f", f"{self.params.DOCKER_FILES_PATH}/{container_name}/Dockerfile",
                 "-t", image_name,
-                f"{self.params.docker_files_path}/{container_name}/"
+                f"{self.params.DOCKER_FILES_PATH}/{container_name}/"
             ]
             try:
+                print("Building docker image")
                 subprocess.run(build_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 print(f"Successfully built image {image_name}")
             except subprocess.CalledProcessError as e:
@@ -134,17 +139,19 @@ class BenchmarkController:
             if self.current_service:
                 stats = self.collect_container_stats(self.current_service)
                 if stats:
-                    self.db.write_metrics(
+                    self.db.write_server_metrics(
                         self.current_service,
                         stats["cpu_usage"],
+                        stats["container_id"],
                         stats["mem_usage_perc"],
                         stats["block_io_write_mb"],
                         stats["block_io_read_mb"],
                         stats["mem_usage_mb"],
+                        stats["mem_usable_mb"],
                         stats["net_io_sent_mb"],
                         stats["net_io_received_mb"]
                     )
-            await asyncio.sleep(self.params.report_metrics_seconds)
+            await asyncio.sleep(self.params.REPORT_METRICS_SECONDS)
 
     def collect_container_stats(self, container_name):
         """
@@ -174,6 +181,7 @@ class BenchmarkController:
 
             return {
                 "cpu_usage": float(cpu_usage),
+                "container_id": data["ID"],
                 "mem_usage_perc": float(mem_usage_perc),
                 "block_io_write_mb": utils.convert_to_mb(block_io_write),
                 "block_io_read_mb": utils.convert_to_mb(block_io_read),
