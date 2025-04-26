@@ -1,0 +1,15 @@
+{
+  "TestCases": [
+    {
+      "id": "T1",
+      "connection_count": 50,
+      "requests_count": 1000,
+      "http_type": "http1"
+    }
+  ],
+  "Frameworks": [
+    {
+      "name": "UNIMPLEMENTED"
+    }
+  ]
+}

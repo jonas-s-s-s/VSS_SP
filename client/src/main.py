@@ -22,8 +22,11 @@ def main():
     print("INFLUXDB_ORG:", influxdb_org)
     print("INFLUXDB_BUCKET:", influxdb_bucket)
 
+    benchmark_config_file = os.environ.get("BENCHMARK_CONFIG_FILE")
+    print("BENCHMARK_CONFIG_FILE:", benchmark_config_file)
+
     # Check for required variables
-    if not all([server_url, influxdb_url, influxdb_token, influxdb_org, influxdb_bucket]):
+    if not all([server_url, influxdb_url, influxdb_token, influxdb_org, influxdb_bucket, benchmark_config_file]):
         print("Error: One or more required environment variables are missing.")
         sys.exit(1)
 
@@ -33,6 +36,7 @@ def main():
         "influxdb_token": influxdb_token,
         "influxdb_org": influxdb_org,
         "influxdb_bucket": influxdb_bucket,
+        "benchmark_config_file": benchmark_config_file,
     }
 
     # Create objects and pass params
