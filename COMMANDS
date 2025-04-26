@@ -1,2 +1,10 @@
 bombardier -c 100 -n 1000 http://localhost:80 -l --print=r --format=j
 
+influx delete \
+  --bucket benchmark_bucket \
+  --org benchmark_org \
+  --predicate '_measurement="C10_R1000_default"' \
+  --start 1970-01-01T00:00:00Z \
+  --stop 2100-01-01T00:00:00Z
+
+ docker compose up --build --force-recreate

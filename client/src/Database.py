@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -30,6 +31,9 @@ class Database:
                 key = f"{prefix}_{k}" if prefix else k
                 if isinstance(v, dict):
                     flatten_and_add_fields(key, v)
+                elif isinstance(v, list):
+                    # Convert the list to JSON string
+                    point.field(key, json.dumps(v))
                 else:
                     point.field(key, v)
 
