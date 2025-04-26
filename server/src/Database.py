@@ -9,9 +9,9 @@ class Database:
     def __init__(self, params):
         self.params = SimpleNamespace(**params)
         self.client = InfluxDBClient(
-            url=self.params.influxdb_url,
-            token=self.params.influxdb_token,
-            org=self.params.influxdb_org
+            url=self.params.INFLUXDB_URL,
+            token=self.params.INFLUXDB_ADMIN_TOKEN,
+            org=self.params.INFLUXDB_ORG
         )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
@@ -35,4 +35,4 @@ class Database:
             time = datetime.now(tz=timezone.utc)
         point = point.time(time)
 
-        self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
+        self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=point)
