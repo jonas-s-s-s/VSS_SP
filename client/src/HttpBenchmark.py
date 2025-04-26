@@ -5,10 +5,11 @@ import uuid
 
 
 class HttpBenchmark:
-    def __init__(self, params, db):
+    def __init__(self, params, db, api_client):
         # Convert dict to "SimpleNamespace" so it can be accessed via "dot notation"
         self.params = SimpleNamespace(**params)
         self.db = db
+        self.api_client = api_client
 
     def run_benchmark(self):
         print("-----------------------------------------------------------------------------------------------------")

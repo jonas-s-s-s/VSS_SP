@@ -1,6 +1,6 @@
 import os
 import sys
-
+from ApiClient import ApiClient
 from HttpBenchmark import HttpBenchmark
 from Database import Database
 
@@ -25,8 +25,12 @@ def main():
     benchmark_config_file = os.environ.get("BENCHMARK_CONFIG_FILE")
     print("BENCHMARK_CONFIG_FILE:", benchmark_config_file)
 
+    server_api_port = os.environ.get("SERVER_API_PORT")
+    print("SERVER_API_PORT:", server_api_port)
+
     # Check for required variables
-    if not all([server_url, influxdb_url, influxdb_token, influxdb_org, influxdb_bucket, benchmark_config_file]):
+    if not all([server_url, influxdb_url, influxdb_token, influxdb_org, influxdb_bucket, benchmark_config_file,
+                server_api_port]):
         print("Error: One or more required environment variables are missing.")
         sys.exit(1)
 
@@ -37,11 +41,13 @@ def main():
         "influxdb_org": influxdb_org,
         "influxdb_bucket": influxdb_bucket,
         "benchmark_config_file": benchmark_config_file,
+        "server_api_port": server_api_port,
     }
 
     # Create objects and pass params
     db = Database(parameters_all)
-    http_benchmark = HttpBenchmark(parameters_all, db)
+    api_client = ApiClient(f"{server_url}:{server_api_port}")
+    http_benchmark = HttpBenchmark(parameters_all, db, api_client)
 
     # Run actions
     http_benchmark.run_benchmark()
