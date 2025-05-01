@@ -15,10 +15,13 @@ class Database:
         )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
-    def write_test_case_result_json(self, data, test_case_uuid, measurement="default_test_case", time=None):
+    def write_test_case_result_json(self, mode, test_case_id, data, test_case_uuid, measurement="default_test_case",
+                                    time=None):
         result = data.get("result", {})
         point = Point(measurement)
         point.tag("test_case_uuid", test_case_uuid)
+        point.field("mode", mode)
+        point.field("test_case_id", test_case_id)
 
         # Add time
         if time is None:
@@ -34,6 +37,8 @@ class Database:
                 elif isinstance(v, list):
                     # Convert the list to JSON string
                     point.field(key, json.dumps(v))
+                elif isinstance(v, int):
+                    point.field(key, float(v))
                 else:
                     point.field(key, v)
 

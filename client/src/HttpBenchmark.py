@@ -68,15 +68,15 @@ class HttpBenchmark:
                     http_type = test_case['http_type']
                     print(f"> Test case {k + 1}/{len(self.test_cases)}: {test_case_id}")
 
-                    test_case_name = f"{framework}_{test_case_id}"
+                    test_case_name = f"{framework}"
                     test_case_uuid = str(uuid.uuid4())
                     # Write test case start into DB
                     self.db.write_test_case_start(test_case_name, test_case_uuid)
                     # Run the test case
-                    self.test_case(test_case_uuid, connection_count, requests_count, http_type,
+                    self.test_case(mode, test_case_id, test_case_uuid, connection_count, requests_count, http_type,
                                    test_case_name)
 
-    def test_case(self, test_case_uuid, connection_count=10, requests_count=1000, http_type="http1",
+    def test_case(self, mode, test_case_id, test_case_uuid, connection_count=10, requests_count=1000, http_type="http1",
                   test_case_name="default"):
         cmd = [
             "bombardier",
@@ -99,7 +99,7 @@ class HttpBenchmark:
                 f"Done. Connections: {connection_count}. Requests: {requests_count}. Test case name: {test_case_name}")
             print("The results are:")
             print(json.dumps(data, indent=4, sort_keys=True))
-            self.db.write_test_case_result_json(data, test_case_uuid, test_case_name)
+            self.db.write_test_case_result_json(mode, test_case_id, data, test_case_uuid, test_case_name)
             print(
                 "-----------------------------------------------------------------------------------------------------")
         else:
