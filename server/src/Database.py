@@ -18,7 +18,20 @@ class Database:
     def write_server_metrics(self, container_name, cpu_usage_perc, container_id, mem_usage_perc, block_io_write_MB,
                              block_io_read_MB, mem_usage_MB, mem_usable_MB, net_io_sent_MB, net_io_receive_MB
                              , measurement="server_metrics", time=None):
+        point = self.create_server_metric_point(container_name, cpu_usage_perc, container_id, mem_usage_perc,
+                                                block_io_write_MB, block_io_read_MB, mem_usage_MB, mem_usable_MB,
+                                                net_io_sent_MB,
+                                                net_io_receive_MB, measurement, time)
+        self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=point)
+
+    def write_server_metrics_bulk(self, points):
+        self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=points)
+
+    def create_server_metric_point(self, container_name, cpu_usage_perc, container_id, mem_usage_perc,
+                                   block_io_write_MB, block_io_read_MB, mem_usage_MB, mem_usable_MB, net_io_sent_MB,
+                                   net_io_receive_MB, measurement="server_metrics", time=None):
         point = Point(measurement)
+
         point.tag("container_name", container_name)
         point.field("cpu_usage_perc", cpu_usage_perc)
         point.field("container_id", container_id)
@@ -29,10 +42,6 @@ class Database:
         point.field("mem_usable_MB", mem_usable_MB)
         point.field("net_io_sent_MB", net_io_sent_MB)
         point.field("net_io_receive_MB", net_io_receive_MB)
-
-        # Add time
         if time is None:
             time = datetime.now(tz=timezone.utc)
-        point = point.time(time)
-
-        self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=point)
+        return point.time(time)

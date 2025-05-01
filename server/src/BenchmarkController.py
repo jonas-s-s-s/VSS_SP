@@ -2,6 +2,7 @@ import json
 import re
 import subprocess
 import threading
+from datetime import datetime, timezone
 
 import ApiServer as api
 import utils
@@ -17,6 +18,9 @@ class BenchmarkController:
         self.current_service = None
         self.available_services = []
         self.api_server = None
+
+        self.metrics_report_buffer = []
+        self.metrics_last_report_timestamp = None
 
     def initialize(self):
         """
@@ -106,20 +110,46 @@ class BenchmarkController:
         while True:
             if self.current_service:
                 stats = self.collect_container_stats(self.current_service)
+                # Append collected stats to the buffer
                 if stats:
-                    self.db.write_server_metrics(
-                        self.current_service,
-                        stats["cpu_usage"],
-                        stats["container_id"],
-                        stats["mem_usage_perc"],
-                        stats["block_io_write_mb"],
-                        stats["block_io_read_mb"],
-                        stats["mem_usage_mb"],
-                        stats["mem_usable_mb"],
-                        stats["net_io_sent_mb"],
-                        stats["net_io_received_mb"]
-                    )
-            await asyncio.sleep(self.params.REPORT_METRICS_SECONDS)
+                    self.metrics_report_buffer.append({
+                        "time": datetime.now(tz=timezone.utc),
+                        "stats": stats
+                    })
+
+                ms_since_last_report = (
+                    datetime.now(tz=timezone.utc) - self.metrics_last_report_timestamp
+                    if self.metrics_last_report_timestamp else None
+                )
+
+                # Check if it's time to send stats to server and empty buffer
+                if ms_since_last_report is None or ms_since_last_report.total_seconds() * 1000.0 > self.params.REPORT_METRICS_MS:
+                    self.metrics_last_report_timestamp = datetime.now(tz=timezone.utc)
+                    points = []
+                    for metric in self.metrics_report_buffer:
+                        stats = metric["stats"]
+                        point = self.db.create_server_metric_point(
+                            self.current_service,
+                            stats["cpu_usage"],
+                            stats["container_id"],
+                            stats["mem_usage_perc"],
+                            stats["block_io_write_mb"],
+                            stats["block_io_read_mb"],
+                            stats["mem_usage_mb"],
+                            stats["mem_usable_mb"],
+                            stats["net_io_sent_mb"],
+                            stats["net_io_received_mb"],
+                            "server_metrics",
+                            metric["time"]
+                        )
+                        points.append(point)
+
+                    if points:
+                        self.db.write_server_metrics_bulk(points)
+                    self.metrics_report_buffer.clear()
+
+            # Sleep till next sampling period
+            await asyncio.sleep(self.params.SAMPLE_METRICS_MS / 1000.0)
 
     def collect_container_stats(self, container_name):
         """
