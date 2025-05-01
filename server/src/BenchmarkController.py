@@ -47,72 +47,39 @@ class BenchmarkController:
         except Exception as e:
             print(f"Failed to load JSON configuration: {e}")
 
-    def start_container(self, container_name):
+    def compose_up(self, service_name):
         """
-        Builds and starts a Docker container for the specified service
+        Runs docker compose up for the specified service
         """
-        image_name = f"benchmark_{container_name}"
-        check_image_cmd = ["docker", "images", "-q", image_name]
-        image_result = subprocess.run(check_image_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if not image_result.stdout.strip():
-            build_cmd = [
-                "docker", "build",
-                "-f", f"{self.params.DOCKER_FILES_PATH}/{container_name}/Dockerfile",
-                "-t", image_name,
-                f"{self.params.DOCKER_FILES_PATH}/{container_name}/"
-            ]
-            try:
-                print("Building docker image")
-                subprocess.run(build_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print(f"Successfully built image {image_name}")
-            except subprocess.CalledProcessError as e:
-                print(f"Error building image {image_name}: {e.stderr}")
-                return False
-
-        check_container_cmd = ["docker", "ps", "-a", "-q", "-f", f"name=^{container_name}$"]
-        container_result = subprocess.run(check_container_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                          text=True)
-        if container_result.stdout.strip():
-            container_id = container_result.stdout.strip()
-            try:
-                subprocess.run(["docker", "rm", "-f", container_id], check=True, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-                print(f"Removed existing container {container_name}")
-            except subprocess.CalledProcessError as e:
-                print(f"Error removing container {container_name}: {e.stderr}")
-                return False
-
-        run_cmd = [
-            "docker", "run", "-d",
-            "-p", "80:80",
-            "--name", container_name,
-            image_name
+        compose_up_cmd = [
+            "docker", "compose", "--project-directory",
+            f"{self.params.DOCKER_FILES_PATH}/{service_name}", "up", "-d"
         ]
+
         try:
-            subprocess.run(run_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f"Started container {container_name}")
+            subprocess.run(compose_up_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f"Docker compose went up: {service_name}")
             return True
         except subprocess.CalledProcessError as e:
-            print(f"Error starting container {container_name}: {e.stderr}")
+            print(f"Error bringing docker compose up: {service_name}: {e.stderr}")
             return False
 
-    def stop_container(self, container_name):
+    def compose_down(self, service_name):
         """
-        Stops and removes the specified Docker container
+        Runs docker compose down for the specified service
         """
-        try:
-            subprocess.run(["docker", "stop", container_name], check=True, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-            print(f"Stopped container {container_name}")
-        except subprocess.CalledProcessError as e:
-            print(f"Error stopping container {container_name}: {e.stderr}")
-            return
+        compose_up_cmd = [
+            "docker", "compose", "--project-directory",
+            f"{self.params.DOCKER_FILES_PATH}/{service_name}", "down"
+        ]
 
         try:
-            subprocess.run(["docker", "rm", container_name], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f"Removed container {container_name}")
+            subprocess.run(compose_up_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(f"Docker compose went down: {service_name}")
+            return True
         except subprocess.CalledProcessError as e:
-            print(f"Error removing container {container_name}: {e.stderr}")
+            print(f"Error bringing docker compose down: {service_name}: {e.stderr}")
+            return False
 
     def switch_to_service(self, service):
         """
@@ -123,9 +90,9 @@ class BenchmarkController:
             return
 
         if self.current_service is not None:
-            self.stop_container(self.current_service)
+            self.compose_down(self.current_service)
 
-        success = self.start_container(service)
+        success = self.compose_up(service)
         if success:
             self.current_service = service
         else:
@@ -193,3 +160,10 @@ class BenchmarkController:
         except Exception as e:
             print(f"Error collecting container stats: {e}")
             return None
+
+    def shutdown(self):
+        """
+        Intended to run before exiting the program
+        """
+        if self.current_service:
+            self.compose_down(self.current_service)

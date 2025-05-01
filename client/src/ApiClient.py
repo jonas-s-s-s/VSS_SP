@@ -22,7 +22,7 @@ class ApiClient:
 
     def get_current_service(self):
         """
-        Get the current active benchmark service from the servet
+        Get the current active benchmark service from the server
         """
         url = f"{self.base_url}/service"
         try:

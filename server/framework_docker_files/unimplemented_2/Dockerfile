@@ -1,9 +1,11 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN mkdir /app/container_2
+COPY . .
+
+RUN pip install flask
 
 EXPOSE 80
 
-CMD ["python", "-m", "http.server", "80"]
+CMD ["python", "/app/src/app.py"]

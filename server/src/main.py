@@ -2,6 +2,10 @@ import os
 import BenchmarkController as cl
 from dotenv import load_dotenv
 import Database as db
+import atexit
+
+database = None
+controller = None
 
 
 def main():
@@ -19,9 +23,19 @@ def main():
         "INFLUXDB_BUCKET": os.getenv("INFLUXDB_BUCKET")
     }
 
+    global database, controller
+
     database = db.Database(env_vars)
     controller = cl.BenchmarkController(env_vars, database)
     controller.initialize()
 
+
+def on_exit():
+    global controller
+    print("Program is exiting...")
+    controller.shutdown()
+
+
 if __name__ == '__main__':
+    atexit.register(on_exit)
     main()

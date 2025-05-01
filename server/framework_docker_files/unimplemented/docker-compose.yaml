@@ -1,0 +1,13 @@
+name: unimplemented
+
+services:
+  hello-world:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    env_file:
+      - ../config.env
+    container_name: unimplemented
+
