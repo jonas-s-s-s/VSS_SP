@@ -13,6 +13,9 @@
   "Frameworks": [
     {
       "name": "next_js"
+    },
+    {
+      "name": "astro_js"
     }
   ]
 }

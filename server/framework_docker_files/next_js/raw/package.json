@@ -1,13 +1,14 @@
 {
-  "name": "hello-astro-ssr",
+  "name": "hello-nextjs",
   "version": "1.0.0",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "start": "node ./dist/server/entry.mjs"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "astro": "^5.7.10",
-    "@astrojs/node": "^9.2.1"
+    "next": "15.3.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   }
 }

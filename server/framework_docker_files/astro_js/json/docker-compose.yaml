@@ -1,4 +1,4 @@
-name: astro_raw
+name: astro_json
 
 services:
   astro:

@@ -1,0 +1,32 @@
+---
+import { Pool } from 'pg';
+
+let data = [];
+try {
+  const pool = new Pool({
+    connectionString: import.meta.env.DATABASE_URL,
+  });
+  const res = await pool.query('SELECT * FROM sample_data');
+  data = res.rows;
+  await pool.end();
+} catch (error) {
+  console.error('Database connection error:', error);
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Astro Postgres Demo</title>
+</head>
+<body>
+    <h1>Sample Data from Postgres:</h1>
+    <ul>
+        {data.map(row => (
+            <li key={row.id}>{row.title}</li>
+        ))}
+    </ul>
+</body>
+</html>

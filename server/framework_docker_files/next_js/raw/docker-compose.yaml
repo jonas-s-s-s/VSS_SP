@@ -1,7 +1,7 @@
-name: astro_ssr
+name: next_js_json
 
 services:
-  astro:
+  nextjs:
     build: .
     ports:
       - "80:3000"
@@ -9,4 +9,4 @@ services:
       - NODE_ENV=production
     env_file:
       - ../../config.env
-    container_name: astro_ssr_app
+    container_name: next_js
