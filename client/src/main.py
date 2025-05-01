@@ -28,9 +28,12 @@ def main():
     server_api_port = os.environ.get("SERVER_API_PORT")
     print("SERVER_API_PORT:", server_api_port)
 
+    sleep_interval = os.environ.get("SLEEP_INTERVAL")
+    print("SLEEP_INTERVAL:", sleep_interval)
+
     # Check for required variables
     if not all([server_url, influxdb_url, influxdb_token, influxdb_org, influxdb_bucket, benchmark_config_file,
-                server_api_port]):
+                server_api_port, sleep_interval]):
         print("Error: One or more required environment variables are missing.")
         sys.exit(1)
 
@@ -42,6 +45,7 @@ def main():
         "influxdb_bucket": influxdb_bucket,
         "benchmark_config_file": benchmark_config_file,
         "server_api_port": server_api_port,
+        "sleep_interval": sleep_interval,
     }
 
     # Create objects and pass params

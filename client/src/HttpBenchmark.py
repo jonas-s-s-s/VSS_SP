@@ -2,7 +2,7 @@ import json
 import subprocess
 from types import SimpleNamespace
 import uuid
-
+import time
 
 class HttpBenchmark:
     def __init__(self, params, db, api_client):
@@ -11,32 +11,53 @@ class HttpBenchmark:
         self.db = db
         self.api_client = api_client
 
-    def run_benchmark(self):
-        print("-----------------------------------------------------------------------------------------------------")
+        # Load test cases from config file
         bench_config_file = open(self.params.benchmark_config_file, 'r')
         parsed_config = json.load(bench_config_file)
-        test_cases = parsed_config['TestCases']
-        frameworks = parsed_config['Frameworks']
+        self.test_cases = parsed_config['TestCases']
+        bench_config_file.close()
 
-        for i, framework in enumerate(frameworks):
-            framework_name = framework['name']
-            print(f"Framework {i + 1}/{len(frameworks)}: {framework_name}")
-            for j, test_case in enumerate(test_cases):
+        # Get list of frameworks from server
+        self.frameworks = []
+        services_parsed = self.api_client.list_services()
+        print(
+            "-----------------------------------------------------------------------------------------------------")
+        print("Server has the following framework services:")
+        for service in services_parsed['services']:
+            print("\t", service)
+            self.frameworks.append(service)
+
+    def run_benchmark(self):
+        print("-----------------------------------------------------------------------------------------------------")
+
+        for i, framework in enumerate(self.frameworks):
+            print(f"Framework {i + 1}/{len(self.frameworks)}: {framework}")
+            # Check what framework the server is running
+            if not self.api_client.get_current_service()['currentService'] == framework:
+                # Call server API - switch to this framework
+                print("Calling server API, change to:", framework)
+                result = self.api_client.change_service(framework)
+                if result is not None:
+                    print("Change OK, sleeping for", self.params.sleep_interval, "ms...")
+                    time.sleep(int(self.params.sleep_interval) / 1000.0)
+                else:
+                    print("Change failed, skipping framework:", framework)
+                    continue
+
+            for j, test_case in enumerate(self.test_cases):
                 test_case_id = test_case['id']
                 connection_count = test_case['connection_count']
                 requests_count = test_case['requests_count']
                 http_type = test_case['http_type']
-                print(f"Test case {j + 1}/{len(test_cases)}: {test_case_id}")
+                print(f"Test case {j + 1}/{len(self.test_cases)}: {test_case_id}")
 
-                test_case_name = f"{framework_name}_{test_case_id}"
+                test_case_name = f"{framework}_{test_case_id}"
                 test_case_uuid = str(uuid.uuid4())
                 # Write test case start into DB
                 self.db.write_test_case_start(test_case_name, test_case_uuid)
                 # Run the test case
                 self.test_case(test_case_uuid, connection_count, requests_count, http_type,
                                test_case_name)
-
-        bench_config_file.close()
 
     def test_case(self, test_case_uuid, connection_count=10, requests_count=1000, http_type="http1",
                   test_case_name="default"):

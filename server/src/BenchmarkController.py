@@ -74,9 +74,9 @@ class BenchmarkController:
         ]
 
         try:
+            self.current_service = None
             subprocess.run(compose_up_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print(f"Docker compose went down: {service_name}")
-            self.current_service = None
             return True
         except subprocess.CalledProcessError as e:
             print(f"Error bringing docker compose down: {service_name}: {e.stderr}")
