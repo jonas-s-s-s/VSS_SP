@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+<p>Summary</p>
+
+<div id="table-container"></div>
+
+<script type="module">
+    const data = {{ table_data | tojson }};
+    const columns = Object.keys(data[0] || {});
+
+    function tabulate(data, columns) {
+        const table = d3.select("#table-container")
+            .append("table")
+            .attr("class", "data-table");
+
+        const thead = table.append("thead");
+        const tbody = table.append("tbody");
+
+        // Header row
+        thead.append("tr")
+            .selectAll("th")
+            .data(columns)
+            .enter()
+            .append("th")
+            .text(d => d);
+
+        // Data rows
+        const rows = tbody.selectAll("tr")
+            .data(data)
+            .enter()
+            .append("tr")
+            .on("mouseover", function () {
+                d3.select(this).classed("hover", true);
+            })
+            .on("mouseout", function () {
+                d3.select(this).classed("hover", false);
+            });
+
+        // Data cells
+        rows.selectAll("td")
+            .data(row => columns.map(column => ({ column, value: row[column] })))
+            .enter()
+            .append("td")
+            .text(d => d.value);
+
+        return table;
+    }
+
+    if (data.length > 0) {
+        tabulate(data, columns);
+    }
+</script>
+
+{% endblock %}
