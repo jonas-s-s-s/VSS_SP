@@ -1,10 +1,18 @@
 {
-  "Frameworks": [
+  "Modes": [
     {
-      "name": "unimplemented"
+      "mode": "raw"
     },
     {
-      "name": "unimplemented_2"
+      "mode": "json"
+    },
+    {
+      "mode": "db"
+    }
+  ],
+  "Frameworks": [
+    {
+      "name": "next_js"
     }
   ]
 }

@@ -25,8 +25,11 @@ class ApiServer:
     def list_services(self):
         return jsonify({"services": self.controller.available_services})
 
+    def list_modes(self):
+        return jsonify({"modes": self.controller.available_modes})
+
     def get_current_service(self):
-        return jsonify({"currentService": self.controller.current_service})
+        return jsonify({"currentService": self.controller.current_service, "mode": self.controller.current_mode})
 
     def change_service(self):
         data = request.get_json()
@@ -34,12 +37,19 @@ class ApiServer:
         if not data or 'serviceName' not in data:
             abort(400, description="Missing serviceName in request body")
 
+        if not data or 'mode' not in data:
+            abort(400, description="Missing mode in request body")
+
         service_name = data['serviceName']
+        mode = data['mode']
 
         if service_name not in self.controller.available_services:
             abort(400, description="Invalid service name")
 
-        self.controller.switch_to_service(service_name)
+        if mode not in self.controller.available_modes:
+            abort(400, description="Invalid mode name")
+
+        self.controller.switch_to_service(service_name, mode)
 
         return jsonify({"message": "Service changed successfully"})
 

@@ -1,13 +1,12 @@
+import asyncio
 import json
-import re
 import subprocess
 import threading
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import ApiServer as api
 import utils
-import asyncio
-from types import SimpleNamespace
 
 
 class BenchmarkController:
@@ -16,7 +15,9 @@ class BenchmarkController:
         self.params = SimpleNamespace(**params)
         self.db = db
         self.current_service = None
+        self.current_mode = None
         self.available_services = []
+        self.available_modes = []
         self.api_server = None
 
         self.metrics_report_buffer = []
@@ -28,7 +29,7 @@ class BenchmarkController:
         """
         self.load_json_config()
         if self.available_services:
-            self.switch_to_service(self.available_services[0])
+            self.switch_to_service(self.available_services[0], self.available_modes[0])
 
         self.api_server = api.ApiServer(self.params.API_HOST, self.params.API_PORT, self)
         flask_thread = threading.Thread(target=self.api_server.run)
@@ -42,51 +43,53 @@ class BenchmarkController:
 
     def load_json_config(self):
         """
-        Loads the available benchmark services from the JSON config
+        Loads the available benchmark services and modes from the JSON config
         """
         try:
             with open(self.params.JSON_PATH, 'r') as file:
                 parsed_config = json.load(file)
                 self.available_services = [framework["name"] for framework in parsed_config["Frameworks"]]
+                self.available_modes = [mode["mode"] for mode in parsed_config["Modes"]]
         except Exception as e:
             print(f"Failed to load JSON configuration: {e}")
 
-    def compose_up(self, service_name):
+    def compose_up(self, service_name, mode):
         """
         Runs docker compose up for the specified service
         """
         compose_up_cmd = [
             "docker", "compose", "--project-directory",
-            f"{self.params.DOCKER_FILES_PATH}/{service_name}", "up", "-d"
+            f"{self.params.DOCKER_FILES_PATH}/{service_name}/{mode}", "up", "-d"
         ]
 
         try:
             subprocess.run(compose_up_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f"Docker compose went up: {service_name}")
+            print(f"Docker compose went up: {service_name}, {mode}")
             return True
         except subprocess.CalledProcessError as e:
             print(f"Error bringing docker compose up: {service_name}: {e.stderr}")
             return False
 
-    def compose_down(self, service_name):
+    def compose_down(self, service_name, mode):
         """
         Runs docker compose down for the specified service
         """
         compose_up_cmd = [
             "docker", "compose", "--project-directory",
-            f"{self.params.DOCKER_FILES_PATH}/{service_name}", "down"
+            f"{self.params.DOCKER_FILES_PATH}/{service_name}/{mode}", "down"
         ]
 
         try:
             self.current_service = None
+            self.current_mode = None
             subprocess.run(compose_up_cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f"Docker compose went down: {service_name}")
+            print(f"Docker compose went down: {service_name}, {mode}")
             return True
         except subprocess.CalledProcessError as e:
             print(f"Error bringing docker compose down: {service_name}: {e.stderr}")
             return False
 
-    def switch_to_service(self, service):
+    def switch_to_service(self, service, mode):
         """
         Switches to the specified service, stopping the current one if needed
         """
@@ -95,11 +98,12 @@ class BenchmarkController:
             return
 
         if self.current_service is not None:
-            self.compose_down(self.current_service)
+            self.compose_down(self.current_service, self.current_mode)
 
-        success = self.compose_up(service)
+        success = self.compose_up(service, mode)
         if success:
             self.current_service = service
+            self.current_mode = mode
         else:
             print(f"Failed to switch to service {service}")
 
@@ -114,7 +118,9 @@ class BenchmarkController:
                 if stats:
                     self.metrics_report_buffer.append({
                         "time": datetime.now(tz=timezone.utc),
-                        "stats": stats
+                        "stats": stats,
+                        "service": self.current_service,
+                        "mode": self.current_mode,
                     })
 
                 ms_since_last_report = (
@@ -129,7 +135,8 @@ class BenchmarkController:
                     for metric in self.metrics_report_buffer:
                         stats = metric["stats"]
                         point = self.db.create_server_metric_point(
-                            self.current_service,
+                            metric["service"],
+                            metric["mode"],
                             stats["cpu_usage"],
                             stats["container_id"],
                             stats["mem_usage_perc"],
@@ -197,4 +204,4 @@ class BenchmarkController:
         Intended to run before exiting the program
         """
         if self.current_service:
-            self.compose_down(self.current_service)
+            self.compose_down(self.current_service, self.current_mode)
