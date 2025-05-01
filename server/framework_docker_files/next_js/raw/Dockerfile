@@ -1,11 +1,24 @@
-FROM python:3.11-slim
+# Build the app
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+COPY package.json package-lock.json* ./
+RUN npm install
+
 COPY . .
+RUN npm run build
 
-RUN pip install flask
+# Run the app
+FROM node:20-alpine
 
-EXPOSE 80
+WORKDIR /app
 
-CMD ["python", "/app/src/app.py"]
+COPY --from=builder /app/package.json /app/package-lock.json* ./
+RUN npm install --production
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]

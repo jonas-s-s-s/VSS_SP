@@ -1,4 +1,4 @@
-name: next_js_json
+name: next_js_raw
 
 services:
   nextjs:
