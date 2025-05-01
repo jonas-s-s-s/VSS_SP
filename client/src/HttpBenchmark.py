@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import uuid
 import time
 
+
 class HttpBenchmark:
     def __init__(self, params, db, api_client):
         # Convert dict to "SimpleNamespace" so it can be accessed via "dot notation"
@@ -27,37 +28,53 @@ class HttpBenchmark:
             print("\t", service)
             self.frameworks.append(service)
 
+        # Get list of modes from server:
+        self.modes = []
+        modes_parsed = self.api_client.list_modes()
+        print(
+            "-----------------------------------------------------------------------------------------------------")
+        print("Server has the following modes:")
+        for mode in modes_parsed['modes']:
+            print("\t", mode)
+            self.modes.append(mode)
+
     def run_benchmark(self):
         print("-----------------------------------------------------------------------------------------------------")
 
         for i, framework in enumerate(self.frameworks):
-            print(f"Framework {i + 1}/{len(self.frameworks)}: {framework}")
-            # Check what framework the server is running
-            if not self.api_client.get_current_service()['currentService'] == framework:
-                # Call server API - switch to this framework
-                print("Calling server API, change to:", framework)
-                result = self.api_client.change_service(framework)
-                if result is not None:
-                    print("Change OK, sleeping for", self.params.sleep_interval, "ms...")
-                    time.sleep(int(self.params.sleep_interval) / 1000.0)
-                else:
-                    print("Change failed, skipping framework:", framework)
-                    continue
+            print(f"> Framework {i + 1}/{len(self.frameworks)}: {framework}")
 
-            for j, test_case in enumerate(self.test_cases):
-                test_case_id = test_case['id']
-                connection_count = test_case['connection_count']
-                requests_count = test_case['requests_count']
-                http_type = test_case['http_type']
-                print(f"Test case {j + 1}/{len(self.test_cases)}: {test_case_id}")
+            for j, mode in enumerate(self.modes):
+                print(f"> Mode {j + 1}/{len(self.modes)}: {mode}")
+                # Check what framework + mode the server is running
+                current_framework = self.api_client.get_current_service()['currentService']
+                current_mode = self.api_client.get_current_service()['mode']
 
-                test_case_name = f"{framework}_{test_case_id}"
-                test_case_uuid = str(uuid.uuid4())
-                # Write test case start into DB
-                self.db.write_test_case_start(test_case_name, test_case_uuid)
-                # Run the test case
-                self.test_case(test_case_uuid, connection_count, requests_count, http_type,
-                               test_case_name)
+                if not current_framework == framework or not current_mode == mode:
+                    # Call server API - switch to this framework + mode
+                    print("Calling server API, change to:", framework, mode)
+                    result = self.api_client.change_service(framework, mode)
+                    if result is not None:
+                        print("Change OK, sleeping for", self.params.sleep_interval, "ms...")
+                        time.sleep(int(self.params.sleep_interval) / 1000.0)
+                    else:
+                        print("Change failed, skipping framework:", framework)
+                        continue
+
+                for k, test_case in enumerate(self.test_cases):
+                    test_case_id = test_case['id']
+                    connection_count = test_case['connection_count']
+                    requests_count = test_case['requests_count']
+                    http_type = test_case['http_type']
+                    print(f"> Test case {k + 1}/{len(self.test_cases)}: {test_case_id}")
+
+                    test_case_name = f"{framework}_{test_case_id}"
+                    test_case_uuid = str(uuid.uuid4())
+                    # Write test case start into DB
+                    self.db.write_test_case_start(test_case_name, test_case_uuid)
+                    # Run the test case
+                    self.test_case(test_case_uuid, connection_count, requests_count, http_type,
+                                   test_case_name)
 
     def test_case(self, test_case_uuid, connection_count=10, requests_count=1000, http_type="http1",
                   test_case_name="default"):

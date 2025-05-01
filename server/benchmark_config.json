@@ -7,7 +7,7 @@
       "mode": "json"
     },
     {
-      "mode": "db"
+      "mode": "sql"
     }
   ],
   "Frameworks": [

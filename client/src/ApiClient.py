@@ -20,6 +20,19 @@ class ApiClient:
             print(f"Error listing services: {e}")
             return None
 
+    def list_modes(self):
+        """
+        Get the list of available benchmark modes from the server
+        """
+        url = f"{self.base_url}/modes"
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Error listing services: {e}")
+            return None
+
     def get_current_service(self):
         """
         Get the current active benchmark service from the server
@@ -33,12 +46,12 @@ class ApiClient:
             print(f"Error getting current service: {e}")
             return None
 
-    def change_service(self, service_name):
+    def change_service(self, service_name, mode):
         """
         Change the current benchmark service on the server
         """
         url = f"{self.base_url}/service"
-        data = {'serviceName': service_name}
+        data = {'serviceName': service_name, "mode": mode}
         try:
             response = requests.put(url, json=data)
             response.raise_for_status()

@@ -16,6 +16,7 @@ class ApiServer:
 
         # Routes
         self.app.route('/services', methods=['GET'])(self.list_services)
+        self.app.route('/modes', methods=['GET'])(self.list_modes)
         self.app.route('/service', methods=['GET'])(self.get_current_service)
         self.app.route('/service', methods=['PUT'])(self.change_service)
 

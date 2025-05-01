@@ -38,7 +38,10 @@ class Database:
                     point.field(key, v)
 
         flatten_and_add_fields("", result)
-        self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
+        try:
+            self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
+        except Exception as e:
+            print("Failed to write point:", e)
 
     def write_test_case_start(self, case_name, test_case_uuid, measurement="test_case_start_times", time=None):
         point = Point(measurement)
