@@ -1,0 +1,30 @@
+name: aspnet_core
+
+services:
+  database:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    container_name: database_service
+
+  aspnet_core:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DATABASE_URL=Host=database;Port=5432;Username=app_user;Password=app_pass;Database=app_db
+    depends_on:
+      - database
+    container_name: asp_net_core
+
+volumes:
+  db-data:

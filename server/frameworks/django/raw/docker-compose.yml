@@ -1,0 +1,14 @@
+﻿name: django_raw
+
+services:
+  django:
+    build: .
+    ports:
+      - "80:8000"
+    environment:
+      - DJANGO_ENV=production
+      - ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+    env_file:
+      - ../../config.env
+    container_name: django
+    command: gunicorn --bind 0.0.0.0:8000 core.wsgi

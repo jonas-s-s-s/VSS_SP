@@ -1,0 +1,12 @@
+name: spring_boot_json
+
+services:
+  springboot:
+    build: .
+    ports:
+      - "80:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=production
+    env_file:
+      - ../../config.env
+    container_name: spring_boot

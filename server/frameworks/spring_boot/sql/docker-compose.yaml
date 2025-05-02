@@ -1,0 +1,32 @@
+name: spring_boot_sql
+services:
+  database:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    container_name: database_service
+
+  app:
+    build: .
+    ports:
+      - "80:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=production
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/app_db
+      - SPRING_DATASOURCE_USERNAME=app_user
+      - SPRING_DATASOURCE_PASSWORD=app_pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+    depends_on:
+      - database
+    container_name: spring_boot
+
+volumes:
+  db-data:

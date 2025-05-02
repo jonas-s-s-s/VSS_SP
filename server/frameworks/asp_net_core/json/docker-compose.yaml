@@ -1,0 +1,12 @@
+name: aspnet_core_json
+
+services:
+  aspnet_core:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    env_file:
+      - ../../config.env
+    container_name: asp_net_core

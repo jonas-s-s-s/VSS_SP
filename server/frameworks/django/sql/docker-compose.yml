@@ -1,0 +1,32 @@
+name: django_sql
+
+services:
+  database:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    container_name: database
+
+  django:
+    build: .
+    ports:
+      - "80:8000"
+    environment:
+      - DJANGO_ENV=production
+      - DATABASE_URL=postgresql://app_user:app_pass@database:5432/app_db
+      - ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+    depends_on:
+      - database
+    container_name: django
+    command: gunicorn --bind 0.0.0.0:8000 core.wsgi:application
+
+volumes:
+  db-data:

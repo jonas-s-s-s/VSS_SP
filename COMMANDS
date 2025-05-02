@@ -8,3 +8,7 @@ influx delete \
   --stop 2100-01-01T00:00:00Z
 
  docker compose up --build --force-recreate
+
+
+
+find -type f -exec batcat --paging=never {} +
