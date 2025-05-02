@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 let data = [];
 try {
   const pool = new Pool({
-    connectionString: import.meta.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL,
   });
   const res = await pool.query('SELECT * FROM sample_data');
   data = res.rows;

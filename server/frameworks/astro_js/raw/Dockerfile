@@ -3,10 +3,10 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY ./project .
+
 RUN npm install
 
-COPY ./project .
 RUN npm run build
 
 # Run the app
