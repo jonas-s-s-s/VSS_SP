@@ -1,0 +1,13 @@
+{
+    "listeners": [
+        {
+            "address": "0.0.0.0",
+            "port": 3000
+        }
+    ],
+    "app": {
+        "threads": 4,
+        "run_as_daemon": false,
+        "log_level": "INFO"
+    }
+}
