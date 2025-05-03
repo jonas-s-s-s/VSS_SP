@@ -1,0 +1,37 @@
+name: ruby_on_rails_sql
+
+services:
+  database:
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_pass
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    container_name: database_service
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U app_user -d app_db" ]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "80:3000"
+    environment:
+      - RAILS_ENV=production
+      - DATABASE_URL=postgresql://app_user:app_pass@database:5432/app_db
+      - RAILS_MASTER_KEY=0d4c0e9c74e5327e7f79299acfbe4aad
+    depends_on:
+       database:
+         condition: service_healthy
+    container_name: ruby_on_rails
+
+volumes:
+  db-data:
