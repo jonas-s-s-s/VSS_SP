@@ -1,0 +1,12 @@
+name: laravel_raw
+
+services:
+  laravel:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENV=production
+    env_file:
+      - ../../config.env
+    container_name: laravel
