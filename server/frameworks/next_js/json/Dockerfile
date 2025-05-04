@@ -10,6 +10,9 @@ COPY . .
 
 RUN npm run build
 
+# Make sure that copy command doesn't throw exception if any of those weren't created by the build step
+RUN mkdir -p /app/.next /app/public /app/node_modules
+
 # Run the app
 FROM node:20-alpine
 

@@ -22,9 +22,17 @@ class Database:
                                                 block_io_write_MB, block_io_read_MB, mem_usage_MB, mem_usable_MB,
                                                 net_io_sent_MB,
                                                 net_io_receive_MB, measurement, time)
+        if not self.client.ping():
+            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+            return
+
         self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=point)
 
     def write_server_metrics_bulk(self, points):
+        if not self.client.ping():
+            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+            return
+
         self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=points)
 
     def create_server_metric_point(self, container_name, mode, cpu_usage_perc, container_id, mem_usage_perc,

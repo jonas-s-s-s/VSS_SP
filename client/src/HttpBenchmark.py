@@ -21,6 +21,12 @@ class HttpBenchmark:
         # Get list of frameworks from server
         self.frameworks = []
         services_parsed = self.api_client.list_services()
+        if services_parsed is None:
+            print(
+                "-----------------------------------------------------------------------------------------------------")
+            print("Error: Cannot connect to server's benchmark control API.")
+            exit(1)
+
         print(
             "-----------------------------------------------------------------------------------------------------")
         print("Server has the following framework services:")

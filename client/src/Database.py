@@ -43,6 +43,11 @@ class Database:
                     point.field(key, v)
 
         flatten_and_add_fields("", result)
+
+        if not self.client.ping():
+            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+            return
+
         try:
             self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
         except Exception as e:
@@ -57,5 +62,9 @@ class Database:
         if time is None:
             time = datetime.now(tz=timezone.utc)
         point = point.time(time)
+
+        if not self.client.ping():
+            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+            return
 
         self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
