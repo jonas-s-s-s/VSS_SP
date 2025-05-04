@@ -7,7 +7,7 @@ services:
       - "80:8000"
     environment:
       - DJANGO_ENV=production
-      - ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - ALLOWED_HOSTS=*
     env_file:
       - ../../config.env
     container_name: django
