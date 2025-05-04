@@ -16,6 +16,21 @@
     },
     {
       "name": "astro_js"
+    },
+    {
+      "name": "django"
+    },
+    {
+      "name": "asp_net_core"
+    },
+    {
+      "name": "spring_boot"
+    },
+    {
+      "name": "ruby_on_rails"
+    },
+    {
+      "name": "drogon"
     }
   ]
 }
