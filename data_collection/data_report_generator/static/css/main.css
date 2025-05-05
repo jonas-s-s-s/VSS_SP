@@ -1,8 +1,13 @@
 body {
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-bottom: 5%;
 }
 
 .main-header {
     text-align: center;
+}
+
+.uppercase {
+    text-transform: uppercase;
 }

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
 
     <link rel="stylesheet" href="static/css/main.css">
+    <script type="text/javascript" src="static/js/main.js"></script>
 </head>
 <body>
 
@@ -41,15 +42,15 @@
     <tbody>
     <tr>
         <td>Website generated at</td>
-        <td>{{ time_now_str }}</td>
+        <td>{{ current_time }}</td>
     </tr>
     <tr>
         <td>Newest data sample</td>
-        <td>{{ new_date }}</td>
+        <td>{{ newest_sample }}</td>
     </tr>
     <tr>
         <td>Oldest data sample</td>
-        <td>{{ old_date }}</td>
+        <td>{{ oldest_sample }}</td>
     </tr>
     </tbody>
 </table>

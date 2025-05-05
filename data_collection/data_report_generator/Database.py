@@ -1,10 +1,7 @@
-import json
 from types import SimpleNamespace
-from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.write_api import SYNCHRONOUS
-from datetime import datetime, timezone
 
-from influxdb_client.rest import ApiException
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 
 class Database:
@@ -17,6 +14,12 @@ class Database:
         )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.query_api = self.client.query_api()
+
+    def ping_db(self):
+        if not self.client.ping():
+            # Cannot connect to DB
+            return False
+        return True
 
     def get_benchmark_measurements_names(self, bucket):
         result = []
@@ -55,7 +58,7 @@ class Database:
     def get_field_mean(self, bucket, measurement, field, from_hours):
         query = f'''
         from(bucket: "{bucket}")
-            |> range(start: -{from_hours}h)
+            |> range(start: -{from_hours})
             |> filter(fn: (r) => r._measurement == "{measurement}")
             |> filter(fn: (r) => r._field == "{field}")
             |> group()
@@ -83,7 +86,7 @@ class Database:
         result = []
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours}h)
+          |> range(start: -{from_hours})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> filter(fn: (r) => r["_field"] == "mode")
           |> group()
@@ -100,7 +103,7 @@ class Database:
     def get_field_mean_at_mode(self, bucket, measurement, field, mode, from_hours):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours}h)
+          |> range(start: -{from_hours})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> filter(fn: (r) => r["mode"] == "{mode}")
@@ -128,7 +131,7 @@ class Database:
         result = []
         query = f'''
             from(bucket: "{bucket}")
-              |> range(start: -{from_hours}h)
+              |> range(start: -{from_hours})
               |> filter(fn: (r) => r["_measurement"] == "{measurement}")
               |> filter(fn: (r) => r["_field"] == "test_case_id")
               |> group()
@@ -145,7 +148,7 @@ class Database:
     def get_field_mean_at_mode_case(self, bucket, measurement, field, mode, case, from_hours):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours}h)
+          |> range(start: -{from_hours})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> filter(fn: (r) => r["mode"] == "{mode}")
@@ -176,13 +179,13 @@ class Database:
         resulting_measurements = []
         query = f'''
             endResults = from(bucket: "{bucket}")
-              |> range(start: -{from_hours}h)
+              |> range(start: -{from_hours})
               |> filter(fn: (r) => r._measurement == "{measurement}")
               |> filter(fn: (r) => exists r.test_case_uuid)
               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             
             startTime = from(bucket: "{bucket}")
-              |> range(start: -{from_hours}h)
+              |> range(start: -{from_hours})
               |> filter(fn: (r) => r._measurement == "test_case_start_times")
               |> filter(fn: (r) => exists r.test_case_uuid)
             
@@ -206,7 +209,7 @@ class Database:
         resulting_metrics = []
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours}h)
+          |> range(start: -{from_hours})
           |> filter(fn: (r) => r["_measurement"] == "server_metrics")
           |> filter(fn: (r) => r["container_name"] == "{measurement}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
@@ -242,7 +245,7 @@ class Database:
     def get_oldest_record(self, bucket, from_hours):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours}h)
+          |> range(start: -{from_hours})
           |> keep(columns: ["_time"])
           |> min(column: "_time")
         '''
@@ -252,7 +255,7 @@ class Database:
     def get_newest_record(self, bucket, from_hours):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours}h)
+          |> range(start: -{from_hours})
           |> keep(columns: ["_time"])
           |> max(column: "_time")
         '''
