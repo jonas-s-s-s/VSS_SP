@@ -1,9 +1,9 @@
 import os
-import Database
-
-import site_generator
 import statistics
-from datetime import datetime, timezone
+from datetime import timezone
+
+import Database
+import site_generator
 
 
 def main():
@@ -15,11 +15,14 @@ def main():
     }
     db = Database.Database(env_vars)
 
-    bucket = "benchmark_bucket"
+    site_generator.generate(db)
+    return 0
+
+    BUCKET = "benchmark_bucket"
     FROM_HOURS = 24
 
-    dt_oldest = db.get_oldest_record(bucket, FROM_HOURS)
-    dt_newest = db.get_newest_record(bucket, FROM_HOURS)
+    dt_oldest = db.get_oldest_record(BUCKET, FROM_HOURS)
+    dt_newest = db.get_newest_record(BUCKET, FROM_HOURS)
 
     dt_utc_o = dt_oldest.replace(tzinfo=timezone.utc)
     print("Oldest data:", dt_utc_o.strftime('%Y-%m-%d %H:%M:%S %Z%z'))
@@ -29,14 +32,14 @@ def main():
 
     print()
     # Get all measurements from benchmark bucket
-    measurements = db.get_benchmark_measurements_names(bucket)
+    measurements = db.get_benchmark_measurements_names(BUCKET)
     print(measurements)
 
     print()
-    total_run_count = db.get_total_uuid_count(bucket)
+    total_run_count = db.get_total_uuid_count(BUCKET)
     print("Total executed TCs:", total_run_count)
     for measurement in measurements:
-        mrc = db.get_measurement_uuid_count(bucket, measurement)
+        mrc = db.get_measurement_uuid_count(BUCKET, measurement)
         print(f"\t{measurement} executed TCs: {mrc}")
     print()
 
@@ -46,36 +49,36 @@ def main():
         print(">", measurement)
         print("===================================================")
         # Get all test cases for this measurement
-        test_cases = db.get_measurement_test_cases(bucket, measurement, FROM_HOURS)
+        test_cases = db.get_measurement_test_cases(BUCKET, measurement, FROM_HOURS)
         print(f"Test Cases:", test_cases)
 
         # Get all measurement modes for this measurement
-        mm = db.get_modes_of_measurement(bucket, measurement, FROM_HOURS)
+        mm = db.get_modes_of_measurement(BUCKET, measurement, FROM_HOURS)
         print(f"Modes:", mm)
 
         # Mean of all measurement fields across all modes and test cases
-        afm = db.all_fields_mean(bucket, measurement, FROM_HOURS)
+        afm = db.all_fields_mean(BUCKET, measurement, FROM_HOURS)
         print("Mean of all fields over all modes and TCs:", afm)
 
         ################################################################################################################
-        server_metrics_analysis(FROM_HOURS, bucket, db, measurement)
+        server_metrics_analysis(FROM_HOURS, BUCKET, db, measurement)
         print()
         ################################################################################################################
 
         mm.sort()
         # Get mean of all fields for a specific mode over all test cases
         for mode in mm:
-            spec_m = db.all_fields_mean_at_mode(bucket, measurement, mode, FROM_HOURS)
+            spec_m = db.all_fields_mean_at_mode(BUCKET, measurement, mode, FROM_HOURS)
             print(f"Mean of all fields for {mode} mode over all TCs:", spec_m)
 
-            server_metrics_analysis_mode(FROM_HOURS, bucket, db, measurement, mode)
+            server_metrics_analysis_mode(FROM_HOURS, BUCKET, db, measurement, mode)
 
             # Mean of all fields for a specific mode and test case
             for tc in test_cases:
-                spec_m_tc = db.all_fields_mean_at_mode_case(bucket, measurement, mode, tc, FROM_HOURS)
+                spec_m_tc = db.all_fields_mean_at_mode_case(BUCKET, measurement, mode, tc, FROM_HOURS)
                 print(f"\tMean of all fields for {mode} mode and {tc} TC:", spec_m_tc)
 
-                server_metrics_analysis_mode_tc(FROM_HOURS, bucket, db, measurement, mode, tc)
+                server_metrics_analysis_mode_tc(FROM_HOURS, BUCKET, db, measurement, mode, tc)
                 print()
             print()
         print()
@@ -201,5 +204,4 @@ def process_server_metrics(measurement_server_metrics):
 
 
 if __name__ == '__main__':
-    #main()
-    site_generator.generate(None)
+    main()

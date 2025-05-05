@@ -4,25 +4,55 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
 
-    <link rel="stylesheet" href="static/css/main.css">
     <script src="static/js/d3.v7.min.js"></script>
 
     <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
 
-    <link rel="stylesheet" href="vanilla.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="static/css/main.css">
 </head>
 <body>
 
-<h1>Benchmark Results</h1>
+<h1 class="main-header">Web Frameworks Benchmark</h1>
 
-<nav>
-    <ul>
+<hr>
+
+<nav class="pure-menu pure-menu-horizontal">
+    <ul class="pure-menu-list">
         {% for item in nav %}
-        <li><a href="{{ item.href }}">{{ item.label }}</a></li>
+        <li class="pure-menu-item {% if item.active %}pure-menu-selected{% endif %}">
+            <a href="{{ item.href }}" class="pure-menu-link">{{ item.label }}</a>
+        </li>
         {% endfor %}
     </ul>
 </nav>
+
+<hr>
+
+<table class="pure-table pure-table-bordered">
+    <thead>
+    <tr>
+        <th>Action</th>
+        <th>Timestamp</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Website generated at</td>
+        <td>{{ time_now_str }}</td>
+    </tr>
+    <tr>
+        <td>Newest data sample</td>
+        <td>{{ new_date }}</td>
+    </tr>
+    <tr>
+        <td>Oldest data sample</td>
+        <td>{{ old_date }}</td>
+    </tr>
+    </tbody>
+</table>
 
 {% block content %}{% endblock %}
 

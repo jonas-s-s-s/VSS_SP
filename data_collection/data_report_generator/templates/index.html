@@ -1,8 +1,50 @@
 {% extends "base.html" %}
 {% block content %}
 
-<p>Summary</p>
+<h1>Benchmark Results</h1>
 
+<table class="pure-table pure-table-bordered">
+    <thead>
+    <tr>
+        <th>Framework</th>
+        <th>Test Case Run Count</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>All Frameworks</td>
+        <td>{{ total_run_count }}</td>
+    </tr>
+    {% for measurement in measurement_run_count %}
+    <tr>
+        <td>{{ measurement.measurement }}</td>
+        <td>{{ measurement.run_count }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2>Summary</h2>
+
+<div id="benchmark-table"></div>
+
+<script>
+    const tableData = {{ benchmark_results | tojson }};
+
+    // Dynamically generate columns based on the keys of the first object in the data
+    const columns = Object.keys(tableData[0] || {}).map((key) => {
+        return {
+            title: key.replace(/_/g, ' ').toUpperCase(),
+            field: key
+        };
+    });
+
+    const table = new Tabulator("#benchmark-table", {
+        data: tableData,
+        layout: "fitColumns",
+        columns: columns,
+    });
+</script>
 
 
 {% endblock %}
