@@ -220,3 +220,21 @@ class Database:
                 resulting_metrics.append(record.values)
 
         return resulting_metrics
+
+    def get_total_uuid_count(self, bucket):
+        query = f'''
+        import "influxdata/influxdb/schema"
+        schema.measurementTagValues(bucket: "{bucket}", measurement:"test_case_start_times", tag: "test_case_uuid") 
+        |> count()
+        '''
+        tables = self.query_api.query(query=query)
+        return tables[0].records[0].values["_value"]
+
+    def get_measurement_uuid_count(self, bucket, measurement):
+        query = f'''
+        import "influxdata/influxdb/schema"
+        schema.measurementTagValues(bucket: "{bucket}", measurement:"{measurement}", tag: "test_case_uuid") 
+        |> count()
+        '''
+        tables = self.query_api.query(query=query)
+        return tables[0].records[0].values["_value"]
