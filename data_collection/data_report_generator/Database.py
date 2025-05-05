@@ -52,7 +52,6 @@ class Database:
 
         return result
 
-
     def get_field_mean(self, bucket, measurement, field, from_hours):
         query = f'''
         from(bucket: "{bucket}")
@@ -170,3 +169,54 @@ class Database:
             results_dict[field] = self.get_field_mean_at_mode_case(bucket, measurement, field, mode, case, from_hours)
 
         return results_dict
+
+    def joined_measurement(self, bucket, measurement, from_hours):
+        # A list containing dictionaries which have the fields of this measurement, the fields include start time which
+        # was obtained by joining it via test_case_uuid with test_case_start_times
+        resulting_measurements = []
+        query = f'''
+            endResults = from(bucket: "{bucket}")
+              |> range(start: -{from_hours}h)
+              |> filter(fn: (r) => r._measurement == "{measurement}")
+              |> filter(fn: (r) => exists r.test_case_uuid)
+              |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            
+            startTime = from(bucket: "{bucket}")
+              |> range(start: -{from_hours}h)
+              |> filter(fn: (r) => r._measurement == "test_case_start_times")
+              |> filter(fn: (r) => exists r.test_case_uuid)
+            
+            join(
+              tables: {{first: endResults, second: startTime}},
+              on: ["test_case_uuid"]
+            ) 
+            |> drop(columns: ["_start_first", "_start_second", "_stop_first","_stop_second", "_measurement_second", "_measurement_first", "_value", "_field"])
+            |> group()
+        '''
+
+        tables = self.query_api.query(query=query)
+        for table in tables:
+            for record in table.records:
+                resulting_measurements.append(record.values)
+
+        return resulting_measurements
+
+    def get_server_metrics(self, bucket, measurement, from_hours):
+        # Gets all server metrics that are associated with this measurement (i.e. framework / container)
+        resulting_metrics = []
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -{from_hours}h)
+          |> filter(fn: (r) => r["_measurement"] == "server_metrics")
+          |> filter(fn: (r) => r["container_name"] == "{measurement}")
+          |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> group()
+          |> drop(columns: ["_start", "_stop", "_measurement", "container_name"])
+        '''
+
+        tables = self.query_api.query(query=query)
+        for table in tables:
+            for record in table.records:
+                resulting_metrics.append(record.values)
+
+        return resulting_metrics
