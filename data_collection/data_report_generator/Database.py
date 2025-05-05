@@ -238,3 +238,23 @@ class Database:
         '''
         tables = self.query_api.query(query=query)
         return tables[0].records[0].values["_value"]
+
+    def get_oldest_record(self, bucket, from_hours):
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -{from_hours}h)
+          |> keep(columns: ["_time"])
+          |> min(column: "_time")
+        '''
+        tables = self.query_api.query(query=query)
+        return tables[0].records[0].values["_time"]
+
+    def get_newest_record(self, bucket, from_hours):
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -{from_hours}h)
+          |> keep(columns: ["_time"])
+          |> max(column: "_time")
+        '''
+        tables = self.query_api.query(query=query)
+        return tables[0].records[0].values["_time"]
