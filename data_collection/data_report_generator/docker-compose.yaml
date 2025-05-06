@@ -1,0 +1,13 @@
+name: data_report_generator
+
+services:
+  benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./output:/app/output
+    env_file:
+      - config.env
+    container_name: data_report_generator
+    restart: no

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1><span class="uppercase">{{ mode }}</span> Mode Details</h1>
+
+<p>This page contains the results for {{ mode }} mode under different test cases.</p>
+<p>Results on the index page are computed as a mean over all of these test cases.</p>
+<p>By observing this information we can determine how the server handles each test case, when it's operating in the {{ mode }} mode.</p>
+{% for case in tables_data %}
+<h2>Case {{case}}</h2>
+
+<div id="{{case}}-table"></div>
+
+{% endfor %}
+
+<!-- Render tables / figures here (use functions from main.js) -->
+<script>
+
+    {% for case in tables_data %}
+    {
+        const td = {{ tables_data[case] | tojson }};
+        render_table(td, "#{{ case }}-table", 2)
+    }
+    {% endfor %}
+
+</script>
+
+{% endblock %}

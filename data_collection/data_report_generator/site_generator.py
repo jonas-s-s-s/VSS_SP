@@ -8,7 +8,7 @@ BUCKET = "benchmark_bucket"
 FROM_HOURS = 24
 
 EXCLUDED_DATA_COLUMNS = ["bytesRead", "bytesWritten", "mode", "others", "req1xx", "req3xx", "req4xx", "req5xx",
-                         "test_case_id", "timeTakenSeconds"]
+                         "test_case_id", "timeTakenSeconds", "errors"]
 
 DETAIL_DATA_COLUMNS = ["rps_percentiles_95", "latency_percentiles_95", "latency_max", "rps_max", "latency_stddev",
                        "rps_stddev", "memory_mean_perc"]
@@ -101,14 +101,18 @@ def _compute_total_reqs(data_dict, float_decimal_places=2):
 
 
 def _create_metrics_table_row(table_data, server_metrics, framework_metrics, framework_name):
+    row = _create_metrics_table_row_no_append(server_metrics, framework_metrics, framework_name)
+    table_data.append(row)
+
+
+def _create_metrics_table_row_no_append(server_metrics, framework_metrics, framework_name):
     # Create initial table row
     summary_table_row = _create_table_row(framework_metrics, framework_name)
     # Compute and append the total requests field
     summary_table_row["REQ Total"] = _compute_total_reqs(framework_metrics)
     # Add server metrics to the row
     _append_to_table_row(server_metrics, summary_table_row)
-    # Append the complete table row
-    table_data.append(summary_table_row)
+    return summary_table_row
 
 
 def _create_mode_summary_graph(modes_list, modes_data, main_x_label, main_y_label, row_field):
@@ -136,64 +140,86 @@ def _create_mode_summary_graph(modes_list, modes_data, main_x_label, main_y_labe
             "main_y_label": main_y_label}
 
 
+def _create_details_pages_data(modes_list, measurements_data):
+    pages_data = {}
+    # For each mode iterate over measurements
+    for mode in modes_list:
+        pages_data[mode] = {"test_cases": {}}
+        # For each measurement iterate over the test cases associated with this mode
+        for m in measurements_data:
+            m_mode_test_cases = measurements_data[m]['modes_data'][mode]['test_cases']
+            # Save each test case associated with this measurement and mode
+            for tc in m_mode_test_cases:
+                tc_data = m_mode_test_cases[tc]
+                # Convert this data to a table row
+                row = _create_metrics_table_row_no_append(tc_data['server_metrics'], tc_data['mean_fields'],
+                                                          m)
+                # Creates an empty list, if there is nothing on the tc key, then appends to it
+                pages_data[mode]["test_cases"].setdefault(tc, []).append(row)
+
+    return pages_data
+
+
 def generate(framework_data):
     env = Environment(loader=FileSystemLoader('templates'))
+
+    # m is used as a short for "measurement"
+    m_data = framework_data['measurements_data']
 
     # Data for the timestamp overview table
     datetime_now = datetime.now(timezone.utc)
     current_time = datetime_now.strftime('%Y-%m-%d %H:%M:%S %Z%z')
 
     # Data for the table which displays test case run counts
-    measurement_run_count = []
-    for measurement in framework_data['measurements_data']:
-        measurement_run_count.append(
+    m_run_count = []
+    for m in m_data:
+        m_run_count.append(
             {
-                "name": measurement,
-                "run_count": framework_data['measurements_data'][measurement]['uuid_count']
+                "name": m,
+                "run_count": m_data[m]['uuid_count']
             })
 
     # Data for the main summary table
     benchmark_results_summary_table_data = []
-    for measurement in framework_data['measurements_data']:
-        mean_summary_data = framework_data['measurements_data'][measurement]['all_fields_mean']
-        _create_metrics_table_row(benchmark_results_summary_table_data,
-                                  framework_data['measurements_data'][measurement]['server_metrics'], mean_summary_data,
-                                  measurement)
+    for m in m_data:
+        mean_summary_data = m_data[m]['all_fields_mean']
+        _create_metrics_table_row(benchmark_results_summary_table_data, m_data[m]['server_metrics'], mean_summary_data,
+                                  m)
 
     # Data for the main summary latency mean histogram
     summary_latency_histogram_data = []
-    for measurement in framework_data['measurements_data']:
-        mean_summary_data = framework_data['measurements_data'][measurement]['all_fields_mean']
-        h_row = {"x_label": measurement, "y_value": mean_summary_data['latency_mean']}
+    for m in m_data:
+        mean_summary_data = m_data[m]['all_fields_mean']
+        h_row = {"x_label": m, "y_value": mean_summary_data['latency_mean']}
         summary_latency_histogram_data.append(h_row)
 
     # Data for the main summary RPS mean histogram
     summary_rps_histogram_data = []
-    for measurement in framework_data['measurements_data']:
-        mean_summary_data = framework_data['measurements_data'][measurement]['all_fields_mean']
-        h_row = {"x_label": measurement, "y_value": mean_summary_data['rps_mean']}
+    for m in m_data:
+        mean_summary_data = m_data[m]['all_fields_mean']
+        h_row = {"x_label": m, "y_value": mean_summary_data['rps_mean']}
         summary_rps_histogram_data.append(h_row)
 
     # Data for the main summary REQ histogram
     summary_req_histogram_data = []
-    for measurement in framework_data['measurements_data']:
-        mean_summary_data = framework_data['measurements_data'][measurement]['all_fields_mean']
-        h_row = {"x_label": measurement, "y_value": mean_summary_data['req2xx']}
+    for m in m_data:
+        mean_summary_data = m_data[m]['all_fields_mean']
+        h_row = {"x_label": m, "y_value": mean_summary_data['req2xx']}
         summary_req_histogram_data.append(h_row)
 
     # Prepare data for the modes summary section
     modes_data = []
     # Get modes list from the first framework
-    modes_list = framework_data['measurements_data'][framework_data['measurements'][0]]['modes']
+    modes_list = m_data[framework_data['measurements'][0]]['modes']
     for mode in modes_list:
         this_mode_data = []
         # Collect data of this mode for each measurement
-        for measurement in framework_data['measurements_data']:
-            measurement_mode_data = framework_data['measurements_data'][measurement]['modes_data'][mode]
-            measurement_mode_data_mean = measurement_mode_data['mean_fields']
-            measurement_mode_server_metrics = measurement_mode_data['server_metrics']
-            _create_metrics_table_row(this_mode_data, measurement_mode_server_metrics, measurement_mode_data_mean,
-                                      measurement)
+        for m in m_data:
+            m_mode_data = m_data[m]['modes_data'][mode]
+            m_mode_data_mean = m_mode_data['mean_fields']
+            m_mode_server_metrics = m_mode_data['server_metrics']
+            _create_metrics_table_row(this_mode_data, m_mode_server_metrics, m_mode_data_mean,
+                                      m)
 
         # Write all of this mode data into the summary modes data list
         modes_data.append({"name": mode, "data": this_mode_data})
@@ -207,31 +233,48 @@ def generate(framework_data):
     # data for the mode summary RPS compare graph
     ms_rps_graph = _create_mode_summary_graph(modes_list, modes_data, "Test Modes", "RPS Mean", "RPS Mean")
 
-    #########################################
-    # Prepare nav bar objects
-    #########################################
-    nav_items = [
-        {'label': 'Index', 'href': 'index.html'},
-    ]
+    # Data for the various mode details pages
+    details_pages_data = _create_details_pages_data(modes_list, m_data)
 
     #########################################
     # Prepare pages
     #########################################
+
+    # Create a details page for each mode
+    mode_details_pages = []
+    for mode in details_pages_data:
+        mode_details_pages.append(
+            {'label': f"{mode} details", 'template': 'mode_details.html', 'output': f'{mode}.html', 'context': {
+                "mode": mode,
+                "tables_data": details_pages_data[mode]['test_cases']
+            }})
+
+    # Create the index page
+    index_page = {'label': "index", 'template': 'index.html', 'output': 'index.html', 'context': {
+        "benchmark_results_summary_table_data": benchmark_results_summary_table_data,
+        "measurement_run_count": m_run_count,
+        "summary_latency_histogram_data": summary_latency_histogram_data,
+        "summary_rps_histogram_data": summary_rps_histogram_data,
+        "summary_req_histogram_data": summary_req_histogram_data,
+        "modes_data": modes_data,
+        "ms_latency_graph": ms_latency_graph,
+        "ms_cpu_graph": ms_cpu_graph,
+        "ms_memory_graph": ms_memory_graph,
+        "ms_rps_graph": ms_rps_graph,
+    }}
+
     pages = [
-        # index.html
-        {'template': 'index.html', 'output': 'index.html', 'context': {
-            "benchmark_results_summary_table_data": benchmark_results_summary_table_data,
-            "measurement_run_count": measurement_run_count,
-            "summary_latency_histogram_data": summary_latency_histogram_data,
-            "summary_rps_histogram_data": summary_rps_histogram_data,
-            "summary_req_histogram_data": summary_req_histogram_data,
-            "modes_data": modes_data,
-            "ms_latency_graph": ms_latency_graph,
-            "ms_cpu_graph": ms_cpu_graph,
-            "ms_memory_graph": ms_memory_graph,
-            "ms_rps_graph": ms_rps_graph,
-        }},
+        index_page,
+        *mode_details_pages
     ]
+
+    #########################################
+    # Prepare nav bar objects
+    #########################################
+    nav_items = []
+
+    for page in pages:
+        nav_items.append({'label': page['label'], 'href': page['output']})
 
     #########################################
     # Generate each page
