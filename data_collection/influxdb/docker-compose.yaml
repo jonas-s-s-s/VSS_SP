@@ -7,22 +7,11 @@ services:
     restart: unless-stopped
     ports:
       - "8086:8086"
-    networks:
-      data_collection_network:
-        ipv4_address: 10.0.0.2
     volumes:
       - influxdb_data:/var/lib/influxdb2
       - influxdb_config:/etc/influxdb2
     env_file:
       - config.env
-
-networks:
-  data_collection_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.0.0.0/16
-          gateway: 10.0.0.1
 
 volumes:
   influxdb_data:
