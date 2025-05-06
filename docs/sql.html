@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title></title>
+    <title>SQL Details</title>
 
     <script src="static/js/d3.v7.min.js"></script>
 
@@ -54,15 +54,15 @@
     <tbody>
     <tr>
         <td>Website generated at</td>
-        <td>2025-05-06 01:23:02 UTC+0000</td>
+        <td>2025-05-06 18:36:11 UTC+0000</td>
     </tr>
     <tr>
         <td>Newest data sample</td>
-        <td>2025-05-05 18:57:51 UTC+0000</td>
+        <td>2025-05-06 02:09:44 UTC+0000</td>
     </tr>
     <tr>
         <td>Oldest data sample</td>
-        <td>2025-05-04 18:02:00 UTC+0000</td>
+        <td>2025-05-06 01:47:07 UTC+0000</td>
     </tr>
     </tbody>
 </table>
@@ -75,10 +75,34 @@
 <p>Results on the index page are computed as a mean over all of these test cases.</p>
 <p>By observing this information we can determine how the server handles each test case, when it's operating in the sql mode.</p>
 
-<h2>Case T1</h2>
+<h2>Case HTTP2_C50_R10K</h2>
 
-<div id="T1-table"></div>
+<div id="HTTP2_C50_R10K-table"></div>
 
+
+<h2>Case HTTP1_C50_R10K</h2>
+
+<div id="HTTP1_C50_R10K-table"></div>
+
+
+
+<h2>Generated Graphs</h2>
+
+<h3>Lat Mean</h3>
+<svg id="graph-0" width="1280" height="400"></svg>
+<br>
+
+<h3>RPS Mean</h3>
+<svg id="graph-1" width="1280" height="400"></svg>
+<br>
+
+<h3>Mem MB</h3>
+<svg id="graph-2" width="1280" height="400"></svg>
+<br>
+
+<h3>CPU %</h3>
+<svg id="graph-3" width="1280" height="400"></svg>
+<br>
 
 
 <!-- Render tables / figures here (use functions from main.js) -->
@@ -86,10 +110,63 @@
 
     
     {
-        const td = [{"CPU %": 151.0, "Lat Mean": 72173.24, "Lat P50": 35415.67, "Lat P75": 47915.33, "Lat P90": 71816.0, "Lat P99": 753517.0, "Mem MB": 67.86, "REQ Total": 1000.0, "RPS Mean": 780.53, "RPS P50": 66.65, "RPS P75": 1709.11, "RPS P90": 2290.68, "RPS P99": 3654.14, "Req 2xx": 735.67, "name": "asp_net_core"}, {"CPU %": 223.05, "Lat Mean": 437808.48, "Lat P50": 420492.25, "Lat P75": 449255.75, "Lat P90": 484721.0, "Lat P99": 842579.75, "Mem MB": 57.44, "REQ Total": 1000.0, "RPS Mean": 115.73, "RPS P50": 0.0, "RPS P75": 183.26, "RPS P90": 415.83, "RPS P99": 640.98, "Req 2xx": 1000.0, "name": "astro_js"}, {"CPU %": 76.44, "Lat Mean": 700788.31, "Lat P50": 646626.0, "Lat P75": 691863.0, "Lat P90": 1117325.25, "Lat P99": 1267212.25, "Mem MB": 53.96, "REQ Total": 1000.0, "RPS Mean": 70.38, "RPS P50": 74.52, "RPS P75": 87.49, "RPS P90": 101.66, "RPS P99": 116.73, "Req 2xx": 471.25, "name": "django"}, {"CPU %": 1.27, "Lat Mean": 30371.02, "Lat P50": 9263.67, "Lat P75": 11394.33, "Lat P90": 14427.0, "Lat P99": 432730.33, "Mem MB": 6.65, "REQ Total": 1000.0, "RPS Mean": 2672.9, "RPS P50": 3008.53, "RPS P75": 3785.5, "RPS P90": 5756.94, "RPS P99": 6438.0, "Req 2xx": 1000.0, "name": "drogon"}, {"CPU %": 271.88, "Lat Mean": 505502.02, "Lat P50": 426669.75, "Lat P75": 455957.5, "Lat P90": 524275.25, "Lat P99": 2089075.75, "Mem MB": 134.14, "REQ Total": 1000.0, "RPS Mean": 108.11, "RPS P50": 0.0, "RPS P75": 86.02, "RPS P90": 401.27, "RPS P99": 1022.39, "Req 2xx": 987.5, "name": "next_js"}, {"CPU %": 86.73, "Lat Mean": 213130.74, "Lat P50": 12883.67, "Lat P75": 19916.0, "Lat P90": 1190829.67, "Lat P99": 1349903.67, "Mem MB": 120.64, "REQ Total": 1000.0, "RPS Mean": 1205.7, "RPS P50": 1233.36, "RPS P75": 1422.37, "RPS P90": 1785.98, "RPS P99": 2104.22, "Req 2xx": 578.33, "name": "ruby_on_rails"}, {"CPU %": 303.15, "Lat Mean": 155673.42, "Lat P50": 34445.33, "Lat P75": 65906.0, "Lat P90": 718541.67, "Lat P99": 975039.33, "Mem MB": 213.8, "REQ Total": 1000.0, "RPS Mean": 887.57, "RPS P50": 789.95, "RPS P75": 1333.37, "RPS P90": 1841.31, "RPS P99": 3777.18, "Req 2xx": 464.0, "name": "spring_boot"}];
-        render_table(td, "#T1-table", 2)
+        const td = [{"CPU %": 316.12, "Lat Mean": 11373.37, "Lat P50": 10997.0, "Lat P75": 12996.0, "Lat P90": 15005.0, "Lat P99": 24902.0, "Mem MB": 121.11, "REQ Total": 10000.0, "RPS Mean": 4388.23, "RPS P50": 4502.68, "RPS P75": 4895.61, "RPS P90": 5398.46, "RPS P99": 6149.02, "Req 2xx": 10000.0, "name": "asp_net_core"}, {"CPU %": 325.03, "Lat Mean": 364937.54, "Lat P50": 361637.0, "Lat P75": 380070.0, "Lat P90": 403773.0, "Lat P99": 452826.0, "Mem MB": 73.38, "REQ Total": 10000.0, "RPS Mean": 137.11, "RPS P50": 0.0, "RPS P75": 203.76, "RPS P90": 522.64, "RPS P99": 799.84, "Req 2xx": 10000.0, "name": "astro_js"}, {"CPU %": 56.17, "Lat Mean": 578687.89, "Lat P50": 578660.0, "Lat P75": 584635.0, "Lat P90": 591117.0, "Lat P99": 612816.0, "Mem MB": 58.41, "REQ Total": 10000.0, "RPS Mean": 86.21, "RPS P50": 99.32, "RPS P75": 100.49, "RPS P90": 101.53, "RPS P99": 103.57, "Req 2xx": 10000.0, "name": "django"}, {"CPU %": 169.65, "Lat Mean": 7993.51, "Lat P50": 7120.0, "Lat P75": 9217.0, "Lat P90": 11844.0, "Lat P99": 17218.0, "Mem MB": 10.98, "REQ Total": 10000.0, "RPS Mean": 6242.0, "RPS P50": 6207.07, "RPS P75": 7070.21, "RPS P90": 7651.19, "RPS P99": 7900.16, "Req 2xx": 10000.0, "name": "drogon"}, {"CPU %": 296.36, "Lat Mean": 347903.77, "Lat P50": 346880.0, "Lat P75": 359231.0, "Lat P90": 374827.0, "Lat P99": 420366.0, "Mem MB": 196.9, "REQ Total": 10000.0, "RPS Mean": 143.39, "RPS P50": 0.0, "RPS P75": 98.16, "RPS P90": 629.12, "RPS P99": 1400.01, "Req 2xx": 10000.0, "name": "next_js"}, {"CPU %": 88.19, "Lat Mean": 13270.93, "Lat P50": 12005.0, "Lat P75": 14997.0, "Lat P90": 18298.0, "Lat P99": 27300.0, "Mem MB": 123.89, "REQ Total": 10000.0, "RPS Mean": 3748.68, "RPS P50": 3801.33, "RPS P75": 4382.41, "RPS P90": 4800.14, "RPS P99": 5350.16, "Req 2xx": 0.0, "name": "ruby_on_rails"}, {"CPU %": 152.92, "Lat Mean": 13141.66, "Lat P50": 12412.0, "Lat P75": 14908.0, "Lat P90": 17872.0, "Lat P99": 28000.0, "Mem MB": 198.18, "REQ Total": 10000.0, "RPS Mean": 3804.01, "RPS P50": 3898.91, "RPS P75": 4300.11, "RPS P90": 4750.78, "RPS P99": 5450.16, "Req 2xx": 0.0, "name": "spring_boot"}];
+        render_table(td, "#HTTP2_C50_R10K-table", 2)
     }
     
+    {
+        const td = [{"CPU %": 183.14, "Lat Mean": 15038.51, "Lat P50": 10999.0, "Lat P75": 13286.0, "Lat P90": 16996.0, "Lat P99": 31995.0, "Mem MB": 64.02, "REQ Total": 10000.0, "RPS Mean": 3325.89, "RPS P50": 3999.06, "RPS P75": 4699.93, "RPS P90": 5083.29, "RPS P99": 5861.3, "Req 2xx": 10000.0, "name": "asp_net_core"}, {"CPU %": 325.74, "Lat Mean": 368567.11, "Lat P50": 364568.0, "Lat P75": 381753.0, "Lat P90": 401472.0, "Lat P99": 452309.0, "Mem MB": 72.51, "REQ Total": 10000.0, "RPS Mean": 135.57, "RPS P50": 0.0, "RPS P75": 194.96, "RPS P90": 549.84, "RPS P99": 800.06, "Req 2xx": 10000.0, "name": "astro_js"}, {"CPU %": 56.07, "Lat Mean": 594194.1, "Lat P50": 582039.0, "Lat P75": 595645.0, "Lat P90": 641156.0, "Lat P99": 733809.0, "Mem MB": 58.16, "REQ Total": 10000.0, "RPS Mean": 84.03, "RPS P50": 99.18, "RPS P75": 100.34, "RPS P90": 101.45, "RPS P99": 103.6, "Req 2xx": 10000.0, "name": "django"}, {"CPU %": 61.68, "Lat Mean": 7940.86, "Lat P50": 6992.0, "Lat P75": 8008.0, "Lat P90": 10996.0, "Lat P99": 16503.0, "Mem MB": 10.93, "REQ Total": 10000.0, "RPS Mean": 6288.69, "RPS P50": 7146.32, "RPS P75": 7749.96, "RPS P90": 8150.29, "RPS P99": 8802.33, "Req 2xx": 10000.0, "name": "drogon"}, {"CPU %": 302.52, "Lat Mean": 359266.61, "Lat P50": 351300.0, "Lat P75": 372966.0, "Lat P90": 400122.0, "Lat P99": 494468.0, "Mem MB": 173.96, "REQ Total": 10000.0, "RPS Mean": 138.92, "RPS P50": 0.0, "RPS P75": 98.08, "RPS P90": 600.08, "RPS P99": 1350.34, "Req 2xx": 10000.0, "name": "next_js"}, {"CPU %": 94.77, "Lat Mean": 12497.99, "Lat P50": 11998.0, "Lat P75": 13994.0, "Lat P90": 16751.0, "Lat P99": 24860.0, "Mem MB": 56.19, "REQ Total": 10000.0, "RPS Mean": 4004.1, "RPS P50": 4001.1, "RPS P75": 4600.32, "RPS P90": 4950.72, "RPS P99": 5500.17, "Req 2xx": 0.0, "name": "ruby_on_rails"}, {"CPU %": 359.96, "Lat Mean": 13709.12, "Lat P50": 12999.0, "Lat P75": 15923.0, "Lat P90": 19003.0, "Lat P99": 27419.0, "Mem MB": 143.13, "REQ Total": 10000.0, "RPS Mean": 3639.05, "RPS P50": 3649.65, "RPS P75": 4200.0, "RPS P90": 4650.91, "RPS P99": 5050.93, "Req 2xx": 0.0, "name": "spring_boot"}];
+        render_table(td, "#HTTP1_C50_R10K-table", 2)
+    }
+    
+
+
+    
+    {
+        const graph_data = {"curve_labels": ["asp_net_core", "astro_js", "django", "drogon", "next_js", "ruby_on_rails", "spring_boot"], "curves": [[11373.37, 15038.51], [364937.54, 368567.11], [578687.89, 594194.1], [7993.51, 7940.86], [347903.77, 359266.61], [13270.93, 12497.99], [13141.66, 13709.12]], "main_x_label": "Test Case", "main_y_label": "Lat Mean", "x_labels": ["HTTP2_C50_R10K", "HTTP1_C50_R10K"]};
+        const x_labels = graph_data.x_labels;
+        const curves = graph_data.curves;
+        const curve_labels = graph_data.curve_labels;
+        const main_x_label = graph_data.main_x_label;
+        const main_y_label = graph_data.main_y_label;
+
+        render_curves_graph("#graph-0", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+    
+    {
+        const graph_data = {"curve_labels": ["asp_net_core", "astro_js", "django", "drogon", "next_js", "ruby_on_rails", "spring_boot"], "curves": [[4388.23, 3325.89], [137.11, 135.57], [86.21, 84.03], [6242.0, 6288.69], [143.39, 138.92], [3748.68, 4004.1], [3804.01, 3639.05]], "main_x_label": "Test Case", "main_y_label": "RPS Mean", "x_labels": ["HTTP2_C50_R10K", "HTTP1_C50_R10K"]};
+        const x_labels = graph_data.x_labels;
+        const curves = graph_data.curves;
+        const curve_labels = graph_data.curve_labels;
+        const main_x_label = graph_data.main_x_label;
+        const main_y_label = graph_data.main_y_label;
+
+        render_curves_graph("#graph-1", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+    
+    {
+        const graph_data = {"curve_labels": ["asp_net_core", "astro_js", "django", "drogon", "next_js", "ruby_on_rails", "spring_boot"], "curves": [[121.11, 64.02], [73.38, 72.51], [58.41, 58.16], [10.98, 10.93], [196.9, 173.96], [123.89, 56.19], [198.18, 143.13]], "main_x_label": "Test Case", "main_y_label": "Mem MB", "x_labels": ["HTTP2_C50_R10K", "HTTP1_C50_R10K"]};
+        const x_labels = graph_data.x_labels;
+        const curves = graph_data.curves;
+        const curve_labels = graph_data.curve_labels;
+        const main_x_label = graph_data.main_x_label;
+        const main_y_label = graph_data.main_y_label;
+
+        render_curves_graph("#graph-2", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+    
+    {
+        const graph_data = {"curve_labels": ["asp_net_core", "astro_js", "django", "drogon", "next_js", "ruby_on_rails", "spring_boot"], "curves": [[316.12, 183.14], [325.03, 325.74], [56.17, 56.07], [169.65, 61.68], [296.36, 302.52], [88.19, 94.77], [152.92, 359.96]], "main_x_label": "Test Case", "main_y_label": "CPU %", "x_labels": ["HTTP2_C50_R10K", "HTTP1_C50_R10K"]};
+        const x_labels = graph_data.x_labels;
+        const curves = graph_data.curves;
+        const curve_labels = graph_data.curve_labels;
+        const main_x_label = graph_data.main_x_label;
+        const main_y_label = graph_data.main_y_label;
+
+        render_curves_graph("#graph-3", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+    
+
 
 </script>
 

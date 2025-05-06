@@ -4,9 +4,6 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import shutil
 
-BUCKET = "benchmark_bucket"
-FROM_HOURS = 24
-
 EXCLUDED_DATA_COLUMNS = ["bytesRead", "bytesWritten", "mode", "others", "req1xx", "req3xx", "req4xx", "req5xx",
                          "test_case_id", "timeTakenSeconds", "errors"]
 
@@ -47,6 +44,10 @@ DATA_NAME_MAP = {
 }
 
 
+#########################################
+# DATA PREPROCESSING
+#########################################
+
 # A preprocessing step for data samples (to be displayed in tables)
 # First validate the sample and check if it's an excluded field, if that's the case return none
 # Then translate the data_name to readable format
@@ -71,6 +72,16 @@ def _preprocess_sample(data_name, data_value, exclude_detail=False, float_decima
     return p_data_name, p_data_value
 
 
+def _compute_total_reqs(data_dict, float_decimal_places=2):
+    total_reqs = data_dict['others'] + data_dict['req1xx'] + data_dict['req2xx'] + \
+                 data_dict['req3xx'] + data_dict['req4xx'] + data_dict['req5xx']
+    return round(total_reqs, float_decimal_places)
+
+
+#########################################
+# TABLE CREATION
+#########################################
+
 def _create_table_row(data_dict, init_name=None):
     table_row = {}
     if init_name is not None:
@@ -94,12 +105,6 @@ def _append_to_table_row(data_dict, table_row):
         table_row[p_name] = p_value
 
 
-def _compute_total_reqs(data_dict, float_decimal_places=2):
-    total_reqs = data_dict['others'] + data_dict['req1xx'] + data_dict['req2xx'] + \
-                 data_dict['req3xx'] + data_dict['req4xx'] + data_dict['req5xx']
-    return round(total_reqs, float_decimal_places)
-
-
 def _create_metrics_table_row(table_data, server_metrics, framework_metrics, framework_name):
     row = _create_metrics_table_row_no_append(server_metrics, framework_metrics, framework_name)
     table_data.append(row)
@@ -115,21 +120,25 @@ def _create_metrics_table_row_no_append(server_metrics, framework_metrics, frame
     return summary_table_row
 
 
-def _create_graph_from_table_rows(modes_list, modes_data, main_x_label, main_y_label, row_field):
+#########################################
+# GRAPH CREATION
+#########################################
+
+def _create_graph_from_tables_data(point_names_list, tables_data, main_x_label, main_y_label, column_name):
     curves = []
-    x_labels = modes_list
+    x_labels = point_names_list
     curve_labels = []
 
     # Get the "name" field of each table row (this only needs to taken from one table)
-    first_table = modes_data[0]
+    first_table = tables_data[0]
     for row_data in first_table['data']:
         curve_labels.append(row_data['name'])
         # Initialize the curves array, each name (framework) has its own curve
         curves.append([])
     # We can take the data to create curves from the struct that is used to render the tables
-    for mode in modes_data:
+    for mode in tables_data:
         for i, row_data in enumerate(mode['data']):
-            value = row_data[row_field]
+            value = row_data[column_name]
             # Protect against "NULL" values
             if value == "NULL":
                 curves[i].append(0.0)
@@ -140,36 +149,28 @@ def _create_graph_from_table_rows(modes_list, modes_data, main_x_label, main_y_l
             "main_y_label": main_y_label}
 
 
-def _create_details_page_graph(modes_list, modes_data, main_x_label, main_y_label, row_field):
-    curves = []
-    x_labels = modes_list
-    curve_labels = []
+#########################################
+# HISTOGRAM CREATION
+#########################################
 
-    # Get the "name" field of each table row (this only needs to taken from one table)
-    first_table = modes_data[0]
-    for row_data in first_table['data']:
-        curve_labels.append(row_data['name'])
-        # Initialize the curves array, each name (framework) has its own curve
-        curves.append([])
-    # We can take the data to create curves from the struct that is used to render the tables
-    for mode in modes_data:
-        for i, row_data in enumerate(mode['data']):
-            value = row_data[row_field]
-            # Protect against "NULL" values
-            if value == "NULL":
-                curves[i].append(0.0)
-            else:
-                curves[i].append(value)
+def _create_summary_histogram(m_data, column_name):
+    histogram_data = []
+    for m in m_data:
+        summary_data = m_data[m]['all_fields_mean']
+        h_row = {"x_label": m, "y_value": summary_data[column_name]}
+        histogram_data.append(h_row)
+    return histogram_data
 
-    return {"curves": curves, "x_labels": x_labels, "curve_labels": curve_labels, "main_x_label": main_x_label,
-            "main_y_label": main_y_label}
 
+#########################################
+# CREATION OF PAGES AND SITE COMPONENTS
+#########################################
 
 def _create_details_pages_data(modes_list, measurements_data):
-    modes_data = {}
+    details_page_data = {}
     # For each mode iterate over measurements
     for mode in modes_list:
-        modes_data[mode] = {"test_cases": {}}
+        details_page_data[mode] = {"test_cases": {}}
         # For each measurement iterate over the test cases associated with this mode
         for m in measurements_data:
             m_mode_test_cases = measurements_data[m]['modes_data'][mode]['test_cases']
@@ -180,23 +181,28 @@ def _create_details_pages_data(modes_list, measurements_data):
                 row = _create_metrics_table_row_no_append(tc_data['server_metrics'], tc_data['mean_fields'],
                                                           m)
                 # Creates an empty list, if there is nothing on the tc key, then appends to it
-                modes_data[mode]["test_cases"].setdefault(tc, []).append(row)
+                details_page_data[mode]["test_cases"].setdefault(tc, []).append(row)
 
         # Generate graphs for this mode
         tables_of_this_mode = []
         test_case_labels = []
-        for tc in modes_data[mode]["test_cases"]:
-            table_data = modes_data[mode]["test_cases"][tc]
+        for tc in details_page_data[mode]["test_cases"]:
+            table_data = details_page_data[mode]["test_cases"][tc]
             tables_of_this_mode.append({"data": table_data, "name": tc})
             test_case_labels.append(tc)
 
+        # Graphs will be created from these table columns
         tracked_rows = ["Lat Mean", "RPS Mean", "Mem MB", "CPU %"]
         for row in tracked_rows:
-            g = _create_graph_from_table_rows(test_case_labels, tables_of_this_mode, "Test Case", row, row)
-            modes_data[mode].setdefault("graphs", []).append(g)
+            g = _create_graph_from_tables_data(test_case_labels, tables_of_this_mode, "Test Case", row, row)
+            details_page_data[mode].setdefault("graphs", []).append(g)
 
-    return modes_data
+    return details_page_data
 
+
+#########################################
+# MAIN SITE GENERATION FUNC
+#########################################
 
 def generate(framework_data):
     env = Environment(loader=FileSystemLoader('templates'))
@@ -225,25 +231,13 @@ def generate(framework_data):
                                   m)
 
     # Data for the main summary latency mean histogram
-    summary_latency_histogram_data = []
-    for m in m_data:
-        mean_summary_data = m_data[m]['all_fields_mean']
-        h_row = {"x_label": m, "y_value": mean_summary_data['latency_mean']}
-        summary_latency_histogram_data.append(h_row)
+    summary_latency_histogram_data = _create_summary_histogram(m_data, 'latency_mean')
 
     # Data for the main summary RPS mean histogram
-    summary_rps_histogram_data = []
-    for m in m_data:
-        mean_summary_data = m_data[m]['all_fields_mean']
-        h_row = {"x_label": m, "y_value": mean_summary_data['rps_mean']}
-        summary_rps_histogram_data.append(h_row)
+    summary_rps_histogram_data = _create_summary_histogram(m_data, 'rps_mean')
 
     # Data for the main summary REQ histogram
-    summary_req_histogram_data = []
-    for m in m_data:
-        mean_summary_data = m_data[m]['all_fields_mean']
-        h_row = {"x_label": m, "y_value": mean_summary_data['req2xx']}
-        summary_req_histogram_data.append(h_row)
+    summary_req_histogram_data = _create_summary_histogram(m_data, 'req2xx')
 
     # Prepare data for the modes summary section
     modes_data = []
@@ -263,14 +257,14 @@ def generate(framework_data):
         modes_data.append({"name": mode, "data": this_mode_data})
 
     # data for the mode summary latency mean compare graph
-    ms_latency_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "Latency Mean (us)",
-                                                     "Lat Mean")
+    ms_latency_graph = _create_graph_from_tables_data(modes_list, modes_data, "Test Modes", "Latency Mean (us)",
+                                                      "Lat Mean")
     # data for the mode summary CPU compare graph
-    ms_cpu_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "CPU %", "CPU %")
+    ms_cpu_graph = _create_graph_from_tables_data(modes_list, modes_data, "Test Modes", "CPU %", "CPU %")
     # data for the mode summary Memory compare graph
-    ms_memory_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "Mem MB", "Mem MB")
+    ms_memory_graph = _create_graph_from_tables_data(modes_list, modes_data, "Test Modes", "Mem MB", "Mem MB")
     # data for the mode summary RPS compare graph
-    ms_rps_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "RPS Mean", "RPS Mean")
+    ms_rps_graph = _create_graph_from_tables_data(modes_list, modes_data, "Test Modes", "RPS Mean", "RPS Mean")
 
     # Data for the various mode details pages
     details_pages_data = _create_details_pages_data(modes_list, m_data)

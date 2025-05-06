@@ -31,6 +31,10 @@ def main():
     sleep_interval = os.environ.get("SLEEP_INTERVAL")
     print("SLEEP_INTERVAL:", sleep_interval)
 
+    # How many times will the run_benchmark() function be called - used only in this file
+    benchmark_runs = os.environ.get("BENCHMARK_RUNS")
+    print("BENCHMARK_RUNS:", sleep_interval)
+
     # Check for required variables
     if not all([server_url, influxdb_url, influxdb_token, influxdb_org, influxdb_bucket, benchmark_config_file,
                 server_api_port, sleep_interval]):
@@ -53,8 +57,13 @@ def main():
     api_client = ApiClient(f"{server_url}:{server_api_port}")
     http_benchmark = HttpBenchmark(parameters_all, db, api_client)
 
-    # Run actions
-    http_benchmark.run_benchmark()
+    # Run benchmark client - possibly multiple times
+    for i in range(int(benchmark_runs)):
+        print("-----------------------------------------------------------------------------------------------------")
+        print(f"> Starting benchmark client run {i + 1} / {benchmark_runs}")
+        http_benchmark.run_benchmark()
+        print("-----------------------------------------------------------------------------------------------------")
+        print(f"> Finished benchmark client run no. {i + 1}")
 
 
 if __name__ == '__main__':

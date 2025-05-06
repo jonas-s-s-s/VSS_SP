@@ -105,7 +105,7 @@ function render_curves_graph(svg_selector, data, x_labels, curve_labels, title_x
     }
 
     const svg = d3.select(svg_selector);
-    const margin = {top: 20, right: 150, bottom: 70, left: 85};
+    const margin = {top: 20, right: 150, bottom: 80, left: 85};
     const width = +svg.attr("width") - margin.left - margin.right;
     const height = +svg.attr("height") - margin.top - margin.bottom;
 
