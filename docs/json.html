@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+
+    <script src="static/js/d3.v7.min.js"></script>
+
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="static/css/main.css">
+    <script type="text/javascript" src="static/js/main.js"></script>
+</head>
+<body>
+
+<h1 class="main-header">Web Frameworks Benchmark</h1>
+
+<hr>
+
+<nav class="pure-menu pure-menu-horizontal">
+    <ul class="pure-menu-list">
+        
+        <li class="pure-menu-item ">
+            <a href="index.html" class="pure-menu-link">index</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="sql.html" class="pure-menu-link">sql details</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="json.html" class="pure-menu-link">json details</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="raw.html" class="pure-menu-link">raw details</a>
+        </li>
+        
+    </ul>
+</nav>
+
+<hr>
+
+<table class="pure-table pure-table-bordered">
+    <thead>
+    <tr>
+        <th>Action</th>
+        <th>Timestamp</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Website generated at</td>
+        <td>2025-05-06 01:23:02 UTC+0000</td>
+    </tr>
+    <tr>
+        <td>Newest data sample</td>
+        <td>2025-05-05 18:57:51 UTC+0000</td>
+    </tr>
+    <tr>
+        <td>Oldest data sample</td>
+        <td>2025-05-04 18:02:00 UTC+0000</td>
+    </tr>
+    </tbody>
+</table>
+
+
+
+<h1><span class="uppercase">json</span> Mode Details</h1>
+
+<p>This page contains the results for json mode under different test cases.</p>
+<p>Results on the index page are computed as a mean over all of these test cases.</p>
+<p>By observing this information we can determine how the server handles each test case, when it's operating in the json mode.</p>
+
+<h2>Case T1</h2>
+
+<div id="T1-table"></div>
+
+
+
+<!-- Render tables / figures here (use functions from main.js) -->
+<script>
+
+    
+    {
+        const td = [{"CPU %": "NULL", "Lat Mean": 24680.04, "Lat P50": 11782.33, "Lat P75": 14807.33, "Lat P90": 22560.0, "Lat P99": 263524.33, "Mem MB": "NULL", "REQ Total": 1000.0, "RPS Mean": 2128.31, "RPS P50": 785.01, "RPS P75": 4031.49, "RPS P90": 5761.98, "RPS P99": 6604.65, "Req 2xx": 1000.0, "name": "asp_net_core"}, {"CPU %": 51.34, "Lat Mean": 67010.08, "Lat P50": 50174.25, "Lat P75": 58632.25, "Lat P90": 71942.25, "Lat P99": 547175.0, "Mem MB": 27.05, "REQ Total": 1000.0, "RPS Mean": 742.54, "RPS P50": 805.54, "RPS P75": 954.78, "RPS P90": 1160.93, "RPS P99": 1326.76, "Req 2xx": 1000.0, "name": "astro_js"}, {"CPU %": 94.73, "Lat Mean": 444829.01, "Lat P50": 450225.0, "Lat P75": 467583.25, "Lat P90": 487672.5, "Lat P99": 522616.5, "Mem MB": 52.33, "REQ Total": 1000.0, "RPS Mean": 618.25, "RPS P50": 419.77, "RPS P75": 442.32, "RPS P90": 497.76, "RPS P99": 656.78, "Req 2xx": 500.0, "name": "django"}, {"CPU %": "NULL", "Lat Mean": 12678.34, "Lat P50": 9748.67, "Lat P75": 12204.0, "Lat P90": 18533.0, "Lat P99": 94704.33, "Mem MB": "NULL", "REQ Total": 1000.0, "RPS Mean": 4040.69, "RPS P50": 4031.14, "RPS P75": 4618.62, "RPS P90": 5069.08, "RPS P99": 5935.58, "Req 2xx": 1000.0, "name": "drogon"}, {"CPU %": 68.79, "Lat Mean": 91412.38, "Lat P50": 79549.8, "Lat P75": 88462.8, "Lat P90": 103908.0, "Lat P99": 443309.8, "Mem MB": 93.51, "REQ Total": 1000.0, "RPS Mean": 609.96, "RPS P50": 521.11, "RPS P75": 714.12, "RPS P90": 971.9, "RPS P99": 1391.5, "Req 2xx": 1000.0, "name": "next_js"}, {"CPU %": 70.33, "Lat Mean": 98000.43, "Lat P50": 17822.0, "Lat P75": 22942.0, "Lat P90": 460405.33, "Lat P99": 699913.67, "Mem MB": 116.15, "REQ Total": 1000.0, "RPS Mean": 3038.24, "RPS P50": 1678.47, "RPS P75": 2027.86, "RPS P90": 2285.69, "RPS P99": 46861.11, "Req 2xx": 323.0, "name": "ruby_on_rails"}, {"CPU %": 250.61, "Lat Mean": 67544.86, "Lat P50": 24541.0, "Lat P75": 33248.67, "Lat P90": 71756.0, "Lat P99": 798953.33, "Mem MB": 159.65, "REQ Total": 1000.0, "RPS Mean": 1553.4, "RPS P50": 1523.92, "RPS P75": 1874.4, "RPS P90": 2638.57, "RPS P99": 4409.29, "Req 2xx": 619.33, "name": "spring_boot"}];
+        render_table(td, "#T1-table", 2)
+    }
+    
+
+</script>
+
+
+
+</body>
+</html>
