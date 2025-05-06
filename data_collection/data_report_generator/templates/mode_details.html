@@ -13,6 +13,13 @@
 
 {% endfor %}
 
+<h2>Generated Graphs</h2>
+{% for graph in graphs_data %}
+<h3>{{ graph.main_y_label }}</h3>
+<svg id="graph-{{ loop.index0 }}" width="1280" height="400"></svg>
+<br>
+{% endfor %}
+
 <!-- Render tables / figures here (use functions from main.js) -->
 <script>
 
@@ -22,6 +29,21 @@
         render_table(td, "#{{ case }}-table", 2)
     }
     {% endfor %}
+
+
+    {% for graph in graphs_data %}
+    {
+        const graph_data = {{ graph | tojson }};
+        const x_labels = graph_data.x_labels;
+        const curves = graph_data.curves;
+        const curve_labels = graph_data.curve_labels;
+        const main_x_label = graph_data.main_x_label;
+        const main_y_label = graph_data.main_y_label;
+
+        render_curves_graph("#graph-{{ loop.index0 }}", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+    {% endfor %}
+
 
 </script>
 

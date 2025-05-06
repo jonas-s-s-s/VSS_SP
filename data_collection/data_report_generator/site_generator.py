@@ -115,7 +115,32 @@ def _create_metrics_table_row_no_append(server_metrics, framework_metrics, frame
     return summary_table_row
 
 
-def _create_mode_summary_graph(modes_list, modes_data, main_x_label, main_y_label, row_field):
+def _create_graph_from_table_rows(modes_list, modes_data, main_x_label, main_y_label, row_field):
+    curves = []
+    x_labels = modes_list
+    curve_labels = []
+
+    # Get the "name" field of each table row (this only needs to taken from one table)
+    first_table = modes_data[0]
+    for row_data in first_table['data']:
+        curve_labels.append(row_data['name'])
+        # Initialize the curves array, each name (framework) has its own curve
+        curves.append([])
+    # We can take the data to create curves from the struct that is used to render the tables
+    for mode in modes_data:
+        for i, row_data in enumerate(mode['data']):
+            value = row_data[row_field]
+            # Protect against "NULL" values
+            if value == "NULL":
+                curves[i].append(0.0)
+            else:
+                curves[i].append(value)
+
+    return {"curves": curves, "x_labels": x_labels, "curve_labels": curve_labels, "main_x_label": main_x_label,
+            "main_y_label": main_y_label}
+
+
+def _create_details_page_graph(modes_list, modes_data, main_x_label, main_y_label, row_field):
     curves = []
     x_labels = modes_list
     curve_labels = []
@@ -141,10 +166,10 @@ def _create_mode_summary_graph(modes_list, modes_data, main_x_label, main_y_labe
 
 
 def _create_details_pages_data(modes_list, measurements_data):
-    pages_data = {}
+    modes_data = {}
     # For each mode iterate over measurements
     for mode in modes_list:
-        pages_data[mode] = {"test_cases": {}}
+        modes_data[mode] = {"test_cases": {}}
         # For each measurement iterate over the test cases associated with this mode
         for m in measurements_data:
             m_mode_test_cases = measurements_data[m]['modes_data'][mode]['test_cases']
@@ -155,9 +180,22 @@ def _create_details_pages_data(modes_list, measurements_data):
                 row = _create_metrics_table_row_no_append(tc_data['server_metrics'], tc_data['mean_fields'],
                                                           m)
                 # Creates an empty list, if there is nothing on the tc key, then appends to it
-                pages_data[mode]["test_cases"].setdefault(tc, []).append(row)
+                modes_data[mode]["test_cases"].setdefault(tc, []).append(row)
 
-    return pages_data
+        # Generate graphs for this mode
+        tables_of_this_mode = []
+        test_case_labels = []
+        for tc in modes_data[mode]["test_cases"]:
+            table_data = modes_data[mode]["test_cases"][tc]
+            tables_of_this_mode.append({"data": table_data, "name": tc})
+            test_case_labels.append(tc)
+
+        tracked_rows = ["Lat Mean", "RPS Mean", "Mem MB", "CPU %"]
+        for row in tracked_rows:
+            g = _create_graph_from_table_rows(test_case_labels, tables_of_this_mode, "Test Case", row, row)
+            modes_data[mode].setdefault("graphs", []).append(g)
+
+    return modes_data
 
 
 def generate(framework_data):
@@ -225,13 +263,14 @@ def generate(framework_data):
         modes_data.append({"name": mode, "data": this_mode_data})
 
     # data for the mode summary latency mean compare graph
-    ms_latency_graph = _create_mode_summary_graph(modes_list, modes_data, "Test Modes", "Latency Mean (us)", "Lat Mean")
+    ms_latency_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "Latency Mean (us)",
+                                                     "Lat Mean")
     # data for the mode summary CPU compare graph
-    ms_cpu_graph = _create_mode_summary_graph(modes_list, modes_data, "Test Modes", "CPU %", "CPU %")
+    ms_cpu_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "CPU %", "CPU %")
     # data for the mode summary Memory compare graph
-    ms_memory_graph = _create_mode_summary_graph(modes_list, modes_data, "Test Modes", "Mem MB", "Mem MB")
+    ms_memory_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "Mem MB", "Mem MB")
     # data for the mode summary RPS compare graph
-    ms_rps_graph = _create_mode_summary_graph(modes_list, modes_data, "Test Modes", "RPS Mean", "RPS Mean")
+    ms_rps_graph = _create_graph_from_table_rows(modes_list, modes_data, "Test Modes", "RPS Mean", "RPS Mean")
 
     # Data for the various mode details pages
     details_pages_data = _create_details_pages_data(modes_list, m_data)
@@ -245,12 +284,15 @@ def generate(framework_data):
     for mode in details_pages_data:
         mode_details_pages.append(
             {'label': f"{mode} details", 'template': 'mode_details.html', 'output': f'{mode}.html', 'context': {
+                "title": f"{mode.upper()} Details",
                 "mode": mode,
-                "tables_data": details_pages_data[mode]['test_cases']
+                "tables_data": details_pages_data[mode]['test_cases'],
+                "graphs_data": details_pages_data[mode]['graphs']
             }})
 
     # Create the index page
     index_page = {'label': "index", 'template': 'index.html', 'output': 'index.html', 'context': {
+        "title": "Benchmark Results",
         "benchmark_results_summary_table_data": benchmark_results_summary_table_data,
         "measurement_run_count": m_run_count,
         "summary_latency_histogram_data": summary_latency_histogram_data,
@@ -276,6 +318,7 @@ def generate(framework_data):
     for page in pages:
         nav_items.append({'label': page['label'], 'href': page['output']})
 
+    print("All pages have been generated.")
     #########################################
     # Generate each page
     #########################################
@@ -299,3 +342,4 @@ def generate(framework_data):
     # Copy the static assets
     #########################################
     shutil.copytree('static', 'output/static', dirs_exist_ok=True)
+    print("All files have been written to disk.")
