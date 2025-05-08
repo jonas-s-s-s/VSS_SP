@@ -1,12 +1,13 @@
 import os
 import statistics
-from datetime import timezone
+from datetime import timezone, datetime
 
 import Database
 
 BUCKET = "benchmark_bucket"
-FROM_HOURS = os.getenv("OLDEST_ALLOWED_DATA_SAMPLE", "24")
 
+START_TIME = datetime.fromisoformat(os.getenv("SAMPLING_START_TIME")).strftime('%Y-%m-%dT%H:%M:%SZ')
+STOP_TIME = datetime.fromisoformat(os.getenv("SAMPLING_STOP_TIME")).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 def get_framework_data():
     db = Database.Database(_load_env_vars())
@@ -26,8 +27,8 @@ def get_framework_data():
 
     return {
         "time_range": _get_time_range_summary(db),
-        "client_hw_info": db.get_last_client_hw_info(BUCKET, FROM_HOURS),
-        "server_hw_info": db.get_last_server_hw_info(BUCKET, FROM_HOURS),
+        "client_hw_info": db.get_last_client_hw_info(BUCKET, START_TIME, STOP_TIME),
+        "server_hw_info": db.get_last_server_hw_info(BUCKET, START_TIME, STOP_TIME),
         "measurements": measurements,
         "total_run_count": db.get_total_uuid_count(BUCKET),
         "measurements_data": {
@@ -52,8 +53,8 @@ def _get_time_range_summary(db):
     """
     Get time of the newest and oldest record from DB
     """
-    oldest = db.get_oldest_record(BUCKET, FROM_HOURS).replace(tzinfo=timezone.utc)
-    newest = db.get_newest_record(BUCKET, FROM_HOURS).replace(tzinfo=timezone.utc)
+    oldest = db.get_oldest_record(BUCKET, START_TIME, STOP_TIME).replace(tzinfo=timezone.utc)
+    newest = db.get_newest_record(BUCKET, START_TIME, STOP_TIME).replace(tzinfo=timezone.utc)
     print("Oldest data sample:", oldest)
     print("Newest data sample:", newest)
     return {
@@ -70,9 +71,9 @@ def _process_measurement(db, measurement):
     :return:
     """
     print("\nProcessing measurement:", measurement)
-    test_cases = db.get_measurement_test_cases(BUCKET, measurement, FROM_HOURS)
+    test_cases = db.get_measurement_test_cases(BUCKET, measurement, START_TIME, STOP_TIME)
     print("Test cases:", test_cases)
-    modes = db.get_modes_of_measurement(BUCKET, measurement, FROM_HOURS)
+    modes = db.get_modes_of_measurement(BUCKET, measurement, START_TIME, STOP_TIME)
     print("Modes:", modes)
     return {
         # How many test cases were executed for this framework (each has its own UUID)
@@ -82,7 +83,7 @@ def _process_measurement(db, measurement):
         # All modes of this framework (i.e. raw, sql, ...)
         "modes": modes,
         # Mean of all the framework's fields (over all test cases and modes)
-        "all_fields_mean": db.all_fields_mean(BUCKET, measurement, FROM_HOURS),
+        "all_fields_mean": db.all_fields_mean(BUCKET, measurement, START_TIME, STOP_TIME),
         # Get all server metrics which contain the name of this framework
         "server_metrics": _aggregate_server_metrics(db, measurement),
         # Get mean and server metrics for all the different modes (this includes test case metrics as nested struct)
@@ -100,7 +101,7 @@ def _process_mode(db, measurement, mode, test_cases):
     """
     print("Processing mode:", mode)
     return {
-        "mean_fields": db.all_fields_mean_at_mode(BUCKET, measurement, mode, FROM_HOURS),
+        "mean_fields": db.all_fields_mean_at_mode(BUCKET, measurement, mode, START_TIME, STOP_TIME),
         "server_metrics": _aggregate_server_metrics(db, measurement, mode=mode),
         "test_cases": {
             tc: _process_test_case(db, measurement, mode, tc)
@@ -115,7 +116,7 @@ def _process_test_case(db, measurement, mode, tc):
     """
     print("Processing test case:", tc)
     return {
-        "mean_fields": db.all_fields_mean_at_mode_case(BUCKET, measurement, mode, tc, FROM_HOURS),
+        "mean_fields": db.all_fields_mean_at_mode_case(BUCKET, measurement, mode, tc, START_TIME, STOP_TIME),
         "server_metrics": _aggregate_server_metrics(db, measurement, mode=mode, test_case=tc)
     }
 
@@ -127,8 +128,8 @@ def _aggregate_server_metrics(db, measurement, mode=None, test_case=None):
     2) Collect server metrics of a SPECIFIC mode and all test cases of a measurement
     3) Collect server metrics of a SPECIFIC mode and SPECIFIC test cases of a measurement
     """
-    server_metrics = db.get_server_metrics(BUCKET, measurement, FROM_HOURS)
-    joined_measurement_fields = db.joined_measurement(BUCKET, measurement, FROM_HOURS)
+    server_metrics = db.get_server_metrics(BUCKET, measurement, START_TIME, STOP_TIME)
+    joined_measurement_fields = db.joined_measurement(BUCKET, measurement, START_TIME, STOP_TIME)
     print("Collecting server metrics:", measurement, mode, test_case)
 
     # This makes the for loop be able to skip over items that aren't "relevant"

@@ -1,5 +1,4 @@
 from types import SimpleNamespace
-
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -19,10 +18,7 @@ class Database:
         self.query_api = self.client.query_api()
 
     def ping_db(self):
-        if not self.client.ping():
-            # Cannot connect to DB
-            return False
-        return True
+        return self.client.ping()
 
     def get_benchmark_measurements_names(self, bucket):
         result = []
@@ -33,17 +29,14 @@ class Database:
         for table in tables:
             for record in table.records:
                 measurement_name = record['_value']
-                # EXCLUDE all non-framework measurements
                 if measurement_name not in NON_FRAMEWORK_MEASUREMENTS:
-                    result.append(record['_value'])
-
+                    result.append(measurement_name)
         return result
 
     def get_measurement_fields(self, bucket, measurement):
         result = []
         query = f'''
         import "influxdata/influxdb/schema"
-        
         schema.measurementFieldKeys(
             bucket: "{bucket}",
             measurement: "{measurement}",
@@ -53,41 +46,33 @@ class Database:
         for table in tables:
             for record in table.records:
                 result.append(record['_value'])
-
         return result
 
-    def get_field_mean(self, bucket, measurement, field, from_hours):
+    def get_field_mean(self, bucket, measurement, field, start_time, stop_time):
         query = f'''
         from(bucket: "{bucket}")
-            |> range(start: -{from_hours})
+            |> range(start: {start_time}, stop: {stop_time})
             |> filter(fn: (r) => r._measurement == "{measurement}")
             |> filter(fn: (r) => r._field == "{field}")
             |> group()
             |> mean()
         '''
-
         try:
             tables = self.query_api.query(query=query)
         except:
             # This will be returned for all fields which aren't of int or float type
             return None
-        # Return value of the first table's first record
         return tables[0].records[0].values['_value']
 
-    def all_fields_mean(self, bucket, measurement, from_hours):
+    def all_fields_mean(self, bucket, measurement, start_time, stop_time):
         fields = self.get_measurement_fields(bucket, measurement)
-        results_dict = {}
+        return {field: self.get_field_mean(bucket, measurement, field, start_time, stop_time) for field in fields}
 
-        for field in fields:
-            results_dict[field] = self.get_field_mean(bucket, measurement, field, from_hours)
-
-        return results_dict
-
-    def get_modes_of_measurement(self, bucket, measurement, from_hours):
+    def get_modes_of_measurement(self, bucket, measurement, start_time, stop_time):
         result = []
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> filter(fn: (r) => r["_field"] == "mode")
           |> group()
@@ -98,13 +83,12 @@ class Database:
         for table in tables:
             for record in table.records:
                 result.append(record['_value'])
-
         return result
 
-    def get_field_mean_at_mode(self, bucket, measurement, field, mode, from_hours):
+    def get_field_mean_at_mode(self, bucket, measurement, field, mode, start_time, stop_time):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> filter(fn: (r) => r["mode"] == "{mode}")
@@ -112,27 +96,24 @@ class Database:
           |> group()
           |> mean(column: "{field}")
         '''
-
         try:
             tables = self.query_api.query(query=query)
         except:
             return None
         return tables[0].records[0].values[field]
 
-    def all_fields_mean_at_mode(self, bucket, measurement, mode, from_hours):
+    def all_fields_mean_at_mode(self, bucket, measurement, mode, start_time, stop_time):
         fields = self.get_measurement_fields(bucket, measurement)
-        results_dict = {}
+        return {
+            field: self.get_field_mean_at_mode(bucket, measurement, field, mode, start_time, stop_time)
+            for field in fields
+        }
 
-        for field in fields:
-            results_dict[field] = self.get_field_mean_at_mode(bucket, measurement, field, mode, from_hours)
-
-        return results_dict
-
-    def get_measurement_test_cases(self, bucket, measurement, from_hours):
+    def get_measurement_test_cases(self, bucket, measurement, start_time, stop_time):
         result = []
         query = f'''
             from(bucket: "{bucket}")
-              |> range(start: -{from_hours})
+              |> range(start: {start_time}, stop: {stop_time})
               |> filter(fn: (r) => r["_measurement"] == "{measurement}")
               |> filter(fn: (r) => r["_field"] == "test_case_id")
               |> group()
@@ -143,13 +124,12 @@ class Database:
         for table in tables:
             for record in table.records:
                 result.append(record['_value'])
-
         return result
 
-    def get_field_mean_at_mode_case(self, bucket, measurement, field, mode, case, from_hours):
+    def get_field_mean_at_mode_case(self, bucket, measurement, field, mode, case, start_time, stop_time):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> filter(fn: (r) => r["mode"] == "{mode}")
@@ -158,35 +138,32 @@ class Database:
           |> group()
           |> mean(column: "{field}")
         '''
-
         try:
             tables = self.query_api.query(query=query)
         except:
             return None
         return tables[0].records[0].values[field]
 
-    def all_fields_mean_at_mode_case(self, bucket, measurement, mode, case, from_hours):
+    def all_fields_mean_at_mode_case(self, bucket, measurement, mode, case, start_time, stop_time):
         fields = self.get_measurement_fields(bucket, measurement)
-        results_dict = {}
+        return {
+            field: self.get_field_mean_at_mode_case(bucket, measurement, field, mode, case, start_time, stop_time)
+            for field in fields
+        }
 
-        for field in fields:
-            results_dict[field] = self.get_field_mean_at_mode_case(bucket, measurement, field, mode, case, from_hours)
-
-        return results_dict
-
-    def joined_measurement(self, bucket, measurement, from_hours):
+    def joined_measurement(self, bucket, measurement, start_time, stop_time):
         # A list containing dictionaries which have the fields of this measurement, the fields include start time which
         # was obtained by joining it via test_case_uuid with test_case_start_times
         resulting_measurements = []
         query = f'''
             endResults = from(bucket: "{bucket}")
-              |> range(start: -{from_hours})
+              |> range(start: {start_time}, stop: {stop_time})
               |> filter(fn: (r) => r._measurement == "{measurement}")
               |> filter(fn: (r) => exists r.test_case_uuid)
               |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             
             startTime = from(bucket: "{bucket}")
-              |> range(start: -{from_hours})
+              |> range(start: {start_time}, stop: {stop_time})
               |> filter(fn: (r) => r._measurement == "test_case_start_times")
               |> filter(fn: (r) => exists r.test_case_uuid)
             
@@ -197,32 +174,28 @@ class Database:
             |> drop(columns: ["_start_first", "_start_second", "_stop_first","_stop_second", "_measurement_second", "_measurement_first", "_value", "_field"])
             |> group()
         '''
-
         tables = self.query_api.query(query=query)
         for table in tables:
             for record in table.records:
                 resulting_measurements.append(record.values)
-
         return resulting_measurements
 
-    def get_server_metrics(self, bucket, measurement, from_hours):
+    def get_server_metrics(self, bucket, measurement, start_time, stop_time):
         # Gets all server metrics that are associated with this measurement (i.e. framework / container)
         resulting_metrics = []
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> filter(fn: (r) => r["_measurement"] == "server_metrics")
           |> filter(fn: (r) => r["container_name"] == "{measurement}")
           |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
           |> group()
           |> drop(columns: ["_start", "_stop", "_measurement", "container_name"])
         '''
-
         tables = self.query_api.query(query=query)
         for table in tables:
             for record in table.records:
                 resulting_metrics.append(record.values)
-
         return resulting_metrics
 
     def get_total_uuid_count(self, bucket):
@@ -243,30 +216,30 @@ class Database:
         tables = self.query_api.query(query=query)
         return tables[0].records[0].values["_value"]
 
-    def get_oldest_record(self, bucket, from_hours):
+    def get_oldest_record(self, bucket, start_time, stop_time):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> keep(columns: ["_time"])
           |> min(column: "_time")
         '''
         tables = self.query_api.query(query=query)
         return tables[0].records[0].values["_time"]
 
-    def get_newest_record(self, bucket, from_hours):
+    def get_newest_record(self, bucket, start_time, stop_time):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> keep(columns: ["_time"])
           |> max(column: "_time")
         '''
         tables = self.query_api.query(query=query)
         return tables[0].records[0].values["_time"]
 
-    def get_last_hw_info(self, bucket, measurement, from_hours):
+    def get_last_hw_info(self, bucket, measurement, start_time, stop_time):
         query = f'''
         from(bucket: "{bucket}")
-          |> range(start: -{from_hours})
+          |> range(start: {start_time}, stop: {stop_time})
           |> filter(fn: (r) => r["_measurement"] == "{measurement}")
           |> filter(fn: (r) => r["_field"] == "info_string")
           |> last()
@@ -277,14 +250,14 @@ class Database:
             "value": tables[0].records[0].values["_value"]
         }
 
-    def get_last_server_hw_info(self, bucket, from_hours):
+    def get_last_server_hw_info(self, bucket, start_time, stop_time):
         try:
-            return self.get_last_hw_info(bucket, "server_hw_info", from_hours)
+            return self.get_last_hw_info(bucket, "server_hw_info", start_time, stop_time)
         except:
             return {"time": "NaN", "value": "No Server HW Data"}
 
-    def get_last_client_hw_info(self, bucket, from_hours):
+    def get_last_client_hw_info(self, bucket, start_time, stop_time):
         try:
-            return self.get_last_hw_info(bucket, "client_hw_info", from_hours)
+            return self.get_last_hw_info(bucket, "client_hw_info", start_time, stop_time)
         except:
             return {"time": "NaN", "value": "No Client HW Data"}
