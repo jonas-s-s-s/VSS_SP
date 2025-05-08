@@ -299,9 +299,26 @@ def generate(framework_data):
         "ms_rps_graph": ms_rps_graph,
     }}
 
+    # Create client HW info page
+    client_hw_info_page = {'label': "client HW", 'template': 'system_info_report.html', 'output': 'client_hw_info.html', 'context': {
+        "title": "Client HW info",
+        "hw_type": "Client",
+        "info_time": framework_data['client_hw_info']['time'],
+        "info_value": framework_data['client_hw_info']['value']
+    }}
+
+    # Create server HW info page
+    server_hw_info_page = {'label': "server HW", 'template': 'system_info_report.html', 'output': 'server_hw_info.html', 'context': {
+        "title": "Server HW Info",
+        "hw_type": "Server",
+        "info_time": framework_data['server_hw_info']['time'],
+        "info_value": framework_data['server_hw_info']['value']
+    }}
     pages = [
         index_page,
-        *mode_details_pages
+        *mode_details_pages,
+        client_hw_info_page,
+        server_hw_info_page,
     ]
 
     #########################################

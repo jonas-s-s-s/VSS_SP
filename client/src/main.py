@@ -3,6 +3,7 @@ import sys
 from ApiClient import ApiClient
 from HttpBenchmark import HttpBenchmark
 from Database import Database
+import HwInfoLib
 
 
 # Gather our code in a main() function
@@ -56,6 +57,10 @@ def main():
     db = Database(parameters_all)
     api_client = ApiClient(f"{server_url}:{server_api_port}")
     http_benchmark = HttpBenchmark(parameters_all, db, api_client)
+
+    # Save HW info of this system into DB
+    hw_info_string = HwInfoLib.get_minimal_html_report()
+    db.write_hw_info_client(hw_info_string)
 
     # Run benchmark client - possibly multiple times
     for i in range(int(benchmark_runs)):

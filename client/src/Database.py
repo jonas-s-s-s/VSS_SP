@@ -15,6 +15,12 @@ class Database:
         )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
+    def ping_db(self):
+        if not self.client.ping():
+            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+            return False
+        return True
+
     def write_test_case_result_json(self, mode, test_case_id, data, test_case_uuid, measurement="default_test_case",
                                     time=None):
         result = data.get("result", {})
@@ -44,8 +50,7 @@ class Database:
 
         flatten_and_add_fields("", result)
 
-        if not self.client.ping():
-            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+        if not self.ping_db():
             return
 
         try:
@@ -63,8 +68,27 @@ class Database:
             time = datetime.now(tz=timezone.utc)
         point = point.time(time)
 
-        if not self.client.ping():
-            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+        if not self.ping_db():
             return
 
         self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
+
+    def write_hw_info(self, info_string, measurement, time=None):
+        point = Point(measurement)
+        point.field("info_string", info_string)
+
+        # Add time
+        if time is None:
+            time = datetime.now(tz=timezone.utc)
+        point = point.time(time)
+
+        if not self.ping_db():
+            return
+
+        self.write_api.write(bucket=self.params.influxdb_bucket, record=point)
+
+    def write_hw_info_client(self, info_string, time=None):
+        self.write_hw_info(info_string, measurement="client_hw_info", time=time)
+
+    def write_hw_info_server(self, info_string, time=None):
+        self.write_hw_info(info_string, measurement="server_hw_info", time=time)

@@ -12,7 +12,28 @@
   ],
   "Frameworks": [
     {
+      "name": "asp_net_core"
+    },
+    {
+      "name": "astro_js"
+    },
+    {
+      "name": "django"
+    },
+    {
+      "name": "drogon"
+    },
+    {
+      "name": "laravel"
+    },
+    {
+      "name": "next_js"
+    },
+    {
       "name": "ruby_on_rails"
+    },
+    {
+      "name": "spring_boot"
     }
   ]
 }

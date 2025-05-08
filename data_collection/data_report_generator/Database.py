@@ -3,6 +3,9 @@ from types import SimpleNamespace
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
 
+# Define all DB measurements which do NOT contain data about framework here
+NON_FRAMEWORK_MEASUREMENTS = ["test_case_start_times", "server_metrics", "server_hw_info", "client_hw_info"]
+
 
 class Database:
     def __init__(self, params):
@@ -29,12 +32,10 @@ class Database:
         # Query returns a list of tables, each table contains some records (rows)
         for table in tables:
             for record in table.records:
-                # Those are the names of the measurements
-                result.append(record['_value'])
-
-        # Remove all non-framework measurements
-        result.remove("test_case_start_times")
-        result.remove("server_metrics")
+                measurement_name = record['_value']
+                # EXCLUDE all non-framework measurements
+                if measurement_name not in NON_FRAMEWORK_MEASUREMENTS:
+                    result.append(record['_value'])
 
         return result
 
@@ -261,3 +262,29 @@ class Database:
         '''
         tables = self.query_api.query(query=query)
         return tables[0].records[0].values["_time"]
+
+    def get_last_hw_info(self, bucket, measurement, from_hours):
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -{from_hours})
+          |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+          |> filter(fn: (r) => r["_field"] == "info_string")
+          |> last()
+        '''
+        tables = self.query_api.query(query=query)
+        return {
+            "time": tables[0].records[0].values["_time"].strftime('%Y-%m-%d %H:%M:%S %Z%z'),
+            "value": tables[0].records[0].values["_value"]
+        }
+
+    def get_last_server_hw_info(self, bucket, from_hours):
+        try:
+            return self.get_last_hw_info(bucket, "server_hw_info", from_hours)
+        except:
+            return {"time": "NaN", "value": "No Server HW Data"}
+
+    def get_last_client_hw_info(self, bucket, from_hours):
+        try:
+            return self.get_last_hw_info(bucket, "client_hw_info", from_hours)
+        except:
+            return {"time": "NaN", "value": "No Client HW Data"}

@@ -3,6 +3,7 @@ import BenchmarkController as cl
 from dotenv import load_dotenv
 import Database as db
 import atexit
+import HwInfoLib
 
 database = None
 controller = None
@@ -27,6 +28,11 @@ def main():
     global database, controller
 
     database = db.Database(env_vars)
+
+    # Save HW info of this system into DB
+    hw_info_string = HwInfoLib.get_minimal_html_report()
+    database.write_hw_info_server(hw_info_string)
+
     controller = cl.BenchmarkController(env_vars, database)
     controller.initialize()
 

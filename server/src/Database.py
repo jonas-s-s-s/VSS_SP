@@ -15,22 +15,27 @@ class Database:
         )
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
-    def write_server_metrics(self, container_name, mode, cpu_usage_perc, container_id, mem_usage_perc, block_io_write_MB,
+    def ping_db(self):
+        if not self.client.ping():
+            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+            return False
+        return True
+
+    def write_server_metrics(self, container_name, mode, cpu_usage_perc, container_id, mem_usage_perc,
+                             block_io_write_MB,
                              block_io_read_MB, mem_usage_MB, mem_usable_MB, net_io_sent_MB, net_io_receive_MB
                              , measurement="server_metrics", time=None):
         point = self.create_server_metric_point(container_name, mode, cpu_usage_perc, container_id, mem_usage_perc,
                                                 block_io_write_MB, block_io_read_MB, mem_usage_MB, mem_usable_MB,
                                                 net_io_sent_MB,
                                                 net_io_receive_MB, measurement, time)
-        if not self.client.ping():
-            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+        if not self.ping_db():
             return
 
         self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=point)
 
     def write_server_metrics_bulk(self, points):
-        if not self.client.ping():
-            print("Failed to ping InfluxDB instance. Aborting DB write operation.")
+        if not self.ping_db():
             return
 
         self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=points)
@@ -54,3 +59,23 @@ class Database:
         if time is None:
             time = datetime.now(tz=timezone.utc)
         return point.time(time)
+
+    def write_hw_info(self, info_string, measurement, time=None):
+        point = Point(measurement)
+        point.field("info_string", info_string)
+
+        # Add time
+        if time is None:
+            time = datetime.now(tz=timezone.utc)
+        point = point.time(time)
+
+        if not self.ping_db():
+            return
+
+        self.write_api.write(bucket=self.params.INFLUXDB_BUCKET, record=point)
+
+    def write_hw_info_client(self, info_string, time=None):
+        self.write_hw_info(info_string, measurement="client_hw_info", time=time)
+
+    def write_hw_info_server(self, info_string, time=None):
+        self.write_hw_info(info_string, measurement="server_hw_info", time=time)

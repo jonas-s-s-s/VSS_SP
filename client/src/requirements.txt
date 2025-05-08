@@ -1,3 +1,4 @@
 influxdb-client==1.48.0
 ciso8601==2.3.2
 requests>=2.32.3
+psutil>=7.0.0

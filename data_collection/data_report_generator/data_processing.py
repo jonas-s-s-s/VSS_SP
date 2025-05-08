@@ -5,7 +5,7 @@ from datetime import timezone
 import Database
 
 BUCKET = "benchmark_bucket"
-FROM_HOURS = os.getenv("OLDEST_ALLOWED_DATA_SAMPLE","24")
+FROM_HOURS = os.getenv("OLDEST_ALLOWED_DATA_SAMPLE", "24")
 
 
 def get_framework_data():
@@ -26,6 +26,8 @@ def get_framework_data():
 
     return {
         "time_range": _get_time_range_summary(db),
+        "client_hw_info": db.get_last_client_hw_info(BUCKET, FROM_HOURS),
+        "server_hw_info": db.get_last_server_hw_info(BUCKET, FROM_HOURS),
         "measurements": measurements,
         "total_run_count": db.get_total_uuid_count(BUCKET),
         "measurements_data": {

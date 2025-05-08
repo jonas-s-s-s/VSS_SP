@@ -21,6 +21,7 @@ services:
       - "80:80"
     environment:
       APP_ENV: production
+      APP_DEBUG: false
       DB_CONNECTION: pgsql
       DB_HOST: database
       DB_PORT: 5432
