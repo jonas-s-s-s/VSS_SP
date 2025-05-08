@@ -3,7 +3,7 @@ FROM python:3.13-alpine
 COPY . /app
 WORKDIR /app
 
-RUN apk add --no-cache git make musl-dev go
+RUN apk add --no-cache git make musl-dev go build-base linux-headers
 
 # Configure Go
 ENV GOROOT /usr/lib/go
