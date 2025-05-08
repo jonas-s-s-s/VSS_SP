@@ -1,4 +1,3 @@
-# systeminfo.py
 
 import html
 import platform
@@ -196,7 +195,7 @@ def _try_to_get_all():
 ###########################################
 
 def _dict_to_html_table(title, data):
-    table = f"<h2>{html.escape(title)}</h2>\n<table border='1'>\n"
+    table = f"<h2>{html.escape(title)}</h2>\n<table class=\"pure-table pure-table-bordered\">\n"
     try:
         for k, v in data.items():
             table += f"<tr><th>{html.escape(str(k))}</th><td>{html.escape(str(v))}</td></tr>\n"
@@ -210,7 +209,7 @@ def _dict_to_html_table(title, data):
 def _nested_dict_to_html_table(title, data):
     table = f"<h2>{html.escape(title)}</h2>\n"
     for key, subdata in data.items():
-        table += f"<h3>{html.escape(key)}</h3>\n<table border='1'>\n"
+        table += f"<h3>{html.escape(key)}</h3>\n<table class=\"pure-table pure-table-bordered\">\n"
         try:
             for subkey, subvalue in subdata.items():
                 table += f"<tr><th>{html.escape(str(subkey))}</th><td>{html.escape(str(subvalue))}</td></tr>\n"
