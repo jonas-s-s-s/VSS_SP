@@ -1,3 +1,4 @@
+import json
 from types import SimpleNamespace
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -91,6 +92,9 @@ class Database:
             tables = self.query_api.query(query=query)
         except:
             # This will be returned for all fields which aren't of int or float type
+            return None
+        if not tables:
+            # Return none if the resulting table is empty
             return None
         return tables[0].records[0].values['_value']
 

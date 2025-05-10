@@ -4,6 +4,8 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import shutil
 
+OUTPUT_DIR = "output"
+
 EXCLUDED_DATA_COLUMNS = ["bytesRead", "bytesWritten", "mode", "others", "req1xx", "req3xx", "req4xx", "req5xx",
                          "test_case_id", "timeTakenSeconds", "errors"]
 
@@ -204,8 +206,12 @@ def _create_details_pages_data(modes_list, measurements_data):
 # MAIN SITE GENERATION FUNC
 #########################################
 
-def generate(framework_data):
+def generate(framework_data, output_dir = "output"):
     env = Environment(loader=FileSystemLoader('templates'))
+
+    # Initialize the OUTPUT_DIR variable
+    global OUTPUT_DIR
+    OUTPUT_DIR = output_dir
 
     # m is used as a short for "measurement"
     m_data = framework_data['measurements_data']
@@ -333,7 +339,7 @@ def generate(framework_data):
     #########################################
     # Generate each page
     #########################################
-    os.makedirs('output', exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
     for page in pages:
         template = env.get_template(page['template'])
         # Merge nav items into each page's context
@@ -346,11 +352,11 @@ def generate(framework_data):
             "total_run_count": framework_data['total_run_count'],
         }
         rendered = template.render(**context)
-        with open(f"output/{page['output']}", 'w') as f:
+        with open(f"{OUTPUT_DIR}/{page['output']}", 'w') as f:
             f.write(rendered)
 
     #########################################
     # Copy the static assets
     #########################################
-    shutil.copytree('static', 'output/static', dirs_exist_ok=True)
-    print("All files have been written to disk.")
+    shutil.copytree('static', f'{OUTPUT_DIR}/static', dirs_exist_ok=True)
+    print(f"All files have been written to output directory: {OUTPUT_DIR}")

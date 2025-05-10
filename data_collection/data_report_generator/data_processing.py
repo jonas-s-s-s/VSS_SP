@@ -6,11 +6,16 @@ import Database
 
 BUCKET = "benchmark_bucket"
 
-START_TIME = datetime.fromisoformat(os.getenv("SAMPLING_START_TIME")).strftime('%Y-%m-%dT%H:%M:%SZ')
-STOP_TIME = datetime.fromisoformat(os.getenv("SAMPLING_STOP_TIME")).strftime('%Y-%m-%dT%H:%M:%SZ')
+START_TIME = None
+STOP_TIME = None
 
-def get_framework_data():
-    db = Database.Database(_load_env_vars())
+def get_framework_data(start_t, stop_t):
+    db = Database.Database(_load_db_env_vars())
+
+    # Initialize the start and stop time
+    global START_TIME, STOP_TIME
+    START_TIME = start_t.isoformat()
+    STOP_TIME = stop_t.isoformat()
 
     # Check DB connection
     if not db.ping_db():
@@ -37,7 +42,7 @@ def get_framework_data():
     }
 
 
-def _load_env_vars():
+def _load_db_env_vars():
     """
     Load env variables for DB
     """
