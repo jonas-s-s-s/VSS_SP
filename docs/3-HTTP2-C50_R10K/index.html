@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Benchmark Results</title>
+
+    <script src="static/js/d3.v7.min.js"></script>
+
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="static/css/main.css">
+    <script type="text/javascript" src="static/js/main.js"></script>
+</head>
+<body>
+
+<h1 class="main-header">Web Frameworks Benchmark</h1>
+
+<hr>
+
+<nav class="pure-menu pure-menu-horizontal">
+    <ul class="pure-menu-list">
+        
+        <li class="pure-menu-item ">
+            <a href="index.html" class="pure-menu-link">index</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="raw.html" class="pure-menu-link">raw details</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="sql.html" class="pure-menu-link">sql details</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="json.html" class="pure-menu-link">json details</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="client_hw_info.html" class="pure-menu-link">client HW</a>
+        </li>
+        
+        <li class="pure-menu-item ">
+            <a href="server_hw_info.html" class="pure-menu-link">server HW</a>
+        </li>
+        
+    </ul>
+</nav>
+
+<hr>
+
+<table class="pure-table pure-table-bordered">
+    <thead>
+    <tr>
+        <th>Action</th>
+        <th>Timestamp</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Website generated at</td>
+        <td>2025-05-10 21:42:18 UTC+0000</td>
+    </tr>
+    <tr>
+        <td>Newest data sample</td>
+        <td>2025-05-09 11:58:51 UTC+0000</td>
+    </tr>
+    <tr>
+        <td>Oldest data sample</td>
+        <td>2025-05-09 08:42:01 UTC+0000</td>
+    </tr>
+    </tbody>
+</table>
+
+
+
+<h1>Benchmark Results</h1>
+
+<table class="pure-table pure-table-bordered">
+    <thead>
+    <tr>
+        <th>Framework</th>
+        <th>Test Case Run Count</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>All Frameworks</td>
+        <td>199</td>
+    </tr>
+    
+    <tr>
+        <td>asp_net_core</td>
+        <td>27</td>
+    </tr>
+    
+    <tr>
+        <td>astro_js</td>
+        <td>27</td>
+    </tr>
+    
+    <tr>
+        <td>django</td>
+        <td>25</td>
+    </tr>
+    
+    <tr>
+        <td>drogon</td>
+        <td>24</td>
+    </tr>
+    
+    <tr>
+        <td>laravel</td>
+        <td>24</td>
+    </tr>
+    
+    <tr>
+        <td>next_js</td>
+        <td>24</td>
+    </tr>
+    
+    <tr>
+        <td>ruby_on_rails</td>
+        <td>24</td>
+    </tr>
+    
+    <tr>
+        <td>spring_boot</td>
+        <td>24</td>
+    </tr>
+    
+    </tbody>
+</table>
+
+<h2>Used Terms</h2>
+
+<p><i>Test case</i> is a single run of the client script which sends HTTP requests to the server, there can be multiple types of test cases varying by the amount of sent requests, the duration of the test, etc.</p>
+<p><i>Test mode</i> is the mode in which the server is operating, there are various "modes" prepared for each framework, like SQL mode (the server is querying data from a SQL database), JSON mode, etc.</p>
+
+<h2>Framework Results Summary</h2>
+
+<p>Table Legend:</p>
+<ul>
+    <li>LAT = Latency</li>
+    <li>RPS = Requests Per Second</li>
+    <li>P50, P75, ... = Percentiles</li>
+    <li>P50, P75, ... = Percentiles</li>
+    <li>REQ 2XX = Amount of successful HTTP requests</li>
+    <li>REQ TOTAL = Total amount of HTTP requests, including unsuccessful ones</li>
+    <li>CPU % = Mean server CPU utilization in %, can go over 100% on multicore systems</li>
+    <li>MEM MB = Mean server memory utilization in megabytes</li>
+    <li style="margin-top: 0.5em">All latency values are in &#181;s (Microseconds)</li>
+</ul>
+<p>The following table contains the <b>mean results</b> for each framework over <b>all test cases</b> and <b>test modes</b>. I.e. the mean is computed over all 199 test case runs.</p>
+
+<div id="benchmark-summary-table"></div>
+
+<p>Visualisations of selected rows from this table can be seen below.</p>
+
+<h3>Mean Latency (lower is better)</h3>
+
+<svg id="summary-latency-histogram" width="1280" height="400"></svg>
+
+<h3>Mean RPS (higher is better)</h3>
+
+<svg id="summary-rps-histogram" width="1280" height="400"></svg>
+
+<h3> Mean REQ 2XX Count (higher is better)</h3>
+
+<svg id="summary-req-histogram" width="1280" height="400"></svg>
+
+<h1> Framework Results Summary Over Different Modes</h1>
+
+
+<h2><span class="uppercase">raw</span> mode</h2>
+
+<div id="raw-summary-table"></div>
+
+
+<h2><span class="uppercase">sql</span> mode</h2>
+
+<div id="sql-summary-table"></div>
+
+
+<h2><span class="uppercase">json</span> mode</h2>
+
+<div id="json-summary-table"></div>
+
+
+
+<h2> Mean Latency Over Test Modes</h2>
+<svg id="mc-latency-graph" width="1280" height="400"></svg>
+
+<h2> Mean CPU % Over Test Modes</h2>
+<svg id="mc-cpu-graph" width="1280" height="400"></svg>
+
+<h2> Mean Memory MB Over Test Modes</h2>
+<svg id="mc-memory-graph" width="1280" height="400"></svg>
+
+<h2> Mean RPS Over Test Modes</h2>
+<svg id="mc-rps-graph" width="1280" height="400"></svg>
+
+<!-- Render tables / figures here (use functions from main.js) -->
+<script>
+    const benchmark_results_summary_table_data = [{"CPU %": 54.77, "Lat Mean": 7718.09, "Lat P50": 6190.93, "Lat P75": 7245.56, "Lat P90": 8629.67, "Lat P99": 13281.0, "Mem MB": 37.65, "REQ Total": 10000.0, "RPS Mean": 7531.54, "RPS P50": 8597.41, "RPS P75": 9482.33, "RPS P90": 10251.01, "RPS P99": 11484.16, "Req 2xx": 10000.0, "name": "asp_net_core"}, {"CPU %": 233.67, "Lat Mean": 121503.83, "Lat P50": 119003.0, "Lat P75": 126038.52, "Lat P90": 137702.78, "Lat P99": 160892.52, "Mem MB": 65.74, "REQ Total": 10000.0, "RPS Mean": 1322.6, "RPS P50": 1386.99, "RPS P75": 1634.2, "RPS P90": 1764.73, "RPS P99": 1909.87, "Req 2xx": 10000.0, "name": "astro_js"}, {"CPU %": 59.94, "Lat Mean": 287013.4, "Lat P50": 288964.25, "Lat P75": 301171.29, "Lat P90": 308309.96, "Lat P99": 318836.12, "Mem MB": 53.56, "REQ Total": 10000.0, "RPS Mean": 1142.23, "RPS P50": 1139.5, "RPS P75": 1156.9, "RPS P90": 1184.23, "RPS P99": 1207.7, "Req 2xx": 10000.0, "name": "django"}, {"CPU %": 17.72, "Lat Mean": 5934.49, "Lat P50": 5271.21, "Lat P75": 5861.12, "Lat P90": 6990.0, "Lat P99": 11555.83, "Mem MB": 3.54, "REQ Total": 10000.0, "RPS Mean": 10014.47, "RPS P50": 10488.03, "RPS P75": 10670.57, "RPS P90": 10854.22, "RPS P99": 11376.0, "Req 2xx": 10000.0, "name": "drogon"}, {"CPU %": 384.21, "Lat Mean": 1199574.13, "Lat P50": 1197642.46, "Lat P75": 1288198.83, "Lat P90": 1375130.42, "Lat P99": 2000836.71, "Mem MB": 1028.13, "REQ Total": 10000.0, "RPS Mean": 42.33, "RPS P50": 32.76, "RPS P75": 51.52, "RPS P90": 101.27, "RPS P99": 185.43, "Req 2xx": 9714.17, "name": "laravel"}, {"CPU %": 210.98, "Lat Mean": 131742.64, "Lat P50": 128761.75, "Lat P75": 136459.67, "Lat P90": 151298.92, "Lat P99": 186778.42, "Mem MB": 161.05, "REQ Total": 10000.0, "RPS Mean": 995.57, "RPS P50": 981.83, "RPS P75": 1151.45, "RPS P90": 1421.52, "RPS P99": 1855.35, "Req 2xx": 10000.0, "name": "next_js"}, {"CPU %": 95.5, "Lat Mean": 178346.35, "Lat P50": 10520.83, "Lat P75": 11375.58, "Lat P90": 1467612.54, "Lat P99": 1708858.79, "Mem MB": 120.71, "REQ Total": 10000.0, "RPS Mean": 274.15, "RPS P50": 292.46, "RPS P75": 304.93, "RPS P90": 350.91, "RPS P99": 502.67, "Req 2xx": 9958.83, "name": "ruby_on_rails"}, {"CPU %": 175.1, "Lat Mean": 15527.69, "Lat P50": 9236.25, "Lat P75": 19165.62, "Lat P90": 30412.67, "Lat P99": 76512.54, "Mem MB": 183.59, "REQ Total": 10000.0, "RPS Mean": 4179.01, "RPS P50": 4032.06, "RPS P75": 5673.19, "RPS P90": 6812.7, "RPS P99": 7962.62, "Req 2xx": 10000.0, "name": "spring_boot"}];
+    render_table(benchmark_results_summary_table_data, "#benchmark-summary-table", 2)
+
+    const summary_latency_histogram_data = [{"x_label": "asp_net_core", "y_value": 7718.09013333333}, {"x_label": "astro_js", "y_value": 121503.83072222222}, {"x_label": "django", "y_value": 287013.3966208334}, {"x_label": "drogon", "y_value": 5934.485499999999}, {"x_label": "laravel", "y_value": 1199574.1305208332}, {"x_label": "next_js", "y_value": 131742.64237916665}, {"x_label": "ruby_on_rails", "y_value": 178346.34680833333}, {"x_label": "spring_boot", "y_value": 15527.694729166667}];
+    render_histogram("#summary-latency-histogram", summary_latency_histogram_data, "Framework", "Latency Mean (us)", "asc");
+
+    const summary_rps_histogram_data = [{"x_label": "asp_net_core", "y_value": 7531.542563617591}, {"x_label": "astro_js", "y_value": 1322.5964351640255}, {"x_label": "django", "y_value": 1142.234592884581}, {"x_label": "drogon", "y_value": 10014.467193224535}, {"x_label": "laravel", "y_value": 42.325033718999485}, {"x_label": "next_js", "y_value": 995.5703679837353}, {"x_label": "ruby_on_rails", "y_value": 274.14614552809775}, {"x_label": "spring_boot", "y_value": 4179.010639612433}];
+    render_histogram("#summary-rps-histogram", summary_rps_histogram_data, "Framework", "RPS Mean", "desc");
+
+    const summary_req_histogram_data = [{"x_label": "asp_net_core", "y_value": 10000.0}, {"x_label": "astro_js", "y_value": 10000.0}, {"x_label": "django", "y_value": 10000.0}, {"x_label": "drogon", "y_value": 10000.0}, {"x_label": "laravel", "y_value": 9714.166666666666}, {"x_label": "next_js", "y_value": 10000.0}, {"x_label": "ruby_on_rails", "y_value": 9958.833333333334}, {"x_label": "spring_boot", "y_value": 10000.0}];
+    render_histogram("#summary-req-histogram", summary_req_histogram_data, "Framework", "REQ 2XX Mean Amount", "desc");
+
+    
+    const raw_summary_table_data = [{"CPU %": 27.71, "Lat Mean": 5214.01, "Lat P50": 4371.56, "Lat P75": 5299.0, "Lat P90": 6424.0, "Lat P99": 10604.44, "Mem MB": 27.94, "REQ Total": 10000.0, "RPS Mean": 9639.29, "RPS P50": 10848.29, "RPS P75": 11763.75, "RPS P90": 12568.59, "RPS P99": 13867.28, "Req 2xx": 10000.0, "name": "asp_net_core"}, {"CPU %": 94.24, "Lat Mean": 27072.46, "Lat P50": 24100.44, "Lat P75": 26748.11, "Lat P90": 35485.44, "Lat P99": 46363.11, "Mem MB": 59.5, "REQ Total": 10000.0, "RPS Mean": 1845.92, "RPS P50": 1999.75, "RPS P75": 2223.06, "RPS P90": 2333.68, "RPS P99": 2472.73, "Req 2xx": 10000.0, "name": "astro_js"}, {"CPU %": 74.38, "Lat Mean": 30072.08, "Lat P50": 29907.38, "Lat P75": 30183.5, "Lat P90": 30690.0, "Lat P99": 32114.5, "Mem MB": 50.9, "REQ Total": 10000.0, "RPS Mean": 1709.41, "RPS P50": 1722.19, "RPS P75": 1731.14, "RPS P90": 1757.97, "RPS P99": 1781.58, "Req 2xx": 10000.0, "name": "django"}, {"CPU %": 9.94, "Lat Mean": 9380.96, "Lat P50": 8582.88, "Lat P75": 8942.88, "Lat P90": 10548.62, "Lat P99": 17701.5, "Mem MB": 3.06, "REQ Total": 10000.0, "RPS Mean": 5328.08, "RPS P50": 5436.85, "RPS P75": 5519.91, "RPS P90": 5605.97, "RPS P99": 5693.54, "Req 2xx": 10000.0, "name": "drogon"}, {"CPU %": 395.22, "Lat Mean": 1084290.78, "Lat P50": 1068132.62, "Lat P75": 1119183.88, "Lat P90": 1170053.75, "Lat P99": 2000684.38, "Mem MB": 959.58, "REQ Total": 10000.0, "RPS Mean": 46.07, "RPS P50": 49.15, "RPS P75": 51.97, "RPS P90": 102.06, "RPS P99": 201.09, "Req 2xx": 9770.38, "name": "laravel"}, {"CPU %": 121.29, "Lat Mean": 36022.11, "Lat P50": 32892.62, "Lat P75": 36160.75, "Lat P90": 45773.5, "Lat P99": 64826.12, "Mem MB": 115.76, "REQ Total": 10000.0, "RPS Mean": 1391.68, "RPS P50": 1445.37, "RPS P75": 1652.02, "RPS P90": 1801.44, "RPS P99": 2021.81, "Req 2xx": 10000.0, "name": "next_js"}, {"CPU %": 96.65, "Lat Mean": 176806.71, "Lat P50": 10385.38, "Lat P75": 11213.88, "Lat P90": 1443945.38, "Lat P99": 1679652.0, "Mem MB": 119.63, "REQ Total": 10000.0, "RPS Mean": 275.96, "RPS P50": 295.98, "RPS P75": 305.05, "RPS P90": 348.36, "RPS P99": 501.73, "Req 2xx": 9960.75, "name": "ruby_on_rails"}, {"CPU %": 35.88, "Lat Mean": 9040.95, "Lat P50": 5717.0, "Lat P75": 8562.25, "Lat P90": 15096.38, "Lat P99": 62267.38, "Mem MB": 117.89, "REQ Total": 10000.0, "RPS Mean": 5568.39, "RPS P50": 5366.64, "RPS P75": 7644.76, "RPS P90": 9137.02, "RPS P99": 10771.23, "Req 2xx": 10000.0, "name": "spring_boot"}];
+    render_table(raw_summary_table_data, "#raw-summary-table", 2)
+    
+    const sql_summary_table_data = [{"CPU %": 93.23, "Lat Mean": 12211.47, "Lat P50": 9522.33, "Lat P75": 10821.67, "Lat P90": 12595.0, "Lat P99": 18280.0, "Mem MB": 51.62, "REQ Total": 10000.0, "RPS Mean": 4160.59, "RPS P50": 4874.28, "RPS P75": 5579.15, "RPS P90": 6196.83, "RPS P99": 7128.6, "Req 2xx": 10000.0, "name": "asp_net_core"}, {"CPU %": 260.58, "Lat Mean": 311963.79, "Lat P50": 310479.78, "Lat P75": 326763.78, "Lat P90": 344139.44, "Lat P99": 392783.11, "Mem MB": 67.23, "REQ Total": 10000.0, "RPS Mean": 160.34, "RPS P50": 5.42, "RPS P75": 310.21, "RPS P90": 503.37, "RPS P99": 713.7, "Req 2xx": 10000.0, "name": "astro_js"}, {"CPU %": 58.51, "Lat Mean": 799668.34, "Lat P50": 805931.88, "Lat P75": 842023.62, "Lat P90": 862338.62, "Lat P99": 887274.38, "Mem MB": 53.78, "REQ Total": 10000.0, "RPS Mean": 62.45, "RPS P50": 50.43, "RPS P75": 68.7, "RPS P90": 100.96, "RPS P99": 104.49, "Req 2xx": 10000.0, "name": "django"}, {"CPU %": 20.23, "Lat Mean": 3435.32, "Lat P50": 2742.62, "Lat P75": 4080.38, "Lat P90": 5155.0, "Lat P99": 7431.5, "Mem MB": 4.31, "REQ Total": 10000.0, "RPS Mean": 14649.96, "RPS P50": 15509.51, "RPS P75": 15924.21, "RPS P90": 16316.86, "RPS P99": 17512.6, "Req 2xx": 10000.0, "name": "drogon"}, {"CPU %": 367.56, "Lat Mean": 1424313.21, "Lat P50": 1450971.75, "Lat P75": 1619354.75, "Lat P90": 1778597.0, "Lat P99": 2001036.88, "Mem MB": 1133.79, "REQ Total": 10000.0, "RPS Mean": 35.07, "RPS P50": 0.0, "RPS P75": 50.69, "RPS P90": 99.57, "RPS P99": 153.74, "Req 2xx": 9592.5, "name": "laravel"}, {"CPU %": 233.55, "Lat Mean": 324428.73, "Lat P50": 321579.12, "Lat P75": 338085.0, "Lat P90": 364247.0, "Lat P99": 431331.38, "Mem MB": 171.91, "REQ Total": 10000.0, "RPS Mean": 154.08, "RPS P50": 0.0, "RPS P75": 100.52, "RPS P90": 609.64, "RPS P99": 1482.99, "Req 2xx": 10000.0, "name": "next_js"}, {"CPU %": 93.94, "Lat Mean": 182690.86, "Lat P50": 10869.75, "Lat P75": 11764.38, "Lat P90": 1523523.75, "Lat P99": 1779542.75, "Mem MB": 124.13, "REQ Total": 10000.0, "RPS Mean": 267.79, "RPS P50": 284.73, "RPS P75": 303.55, "RPS P90": 353.73, "RPS P99": 503.87, "Req 2xx": 9955.0, "name": "ruby_on_rails"}, {"CPU %": 259.54, "Lat Mean": 27828.45, "Lat P50": 15778.5, "Lat P75": 39503.38, "Lat P90": 59919.88, "Lat P99": 113413.38, "Mem MB": 225.79, "REQ Total": 10000.0, "RPS Mean": 1808.05, "RPS P50": 1819.74, "RPS P75": 2218.92, "RPS P90": 2794.24, "RPS P99": 3489.53, "Req 2xx": 10000.0, "name": "spring_boot"}];
+    render_table(sql_summary_table_data, "#sql-summary-table", 2)
+    
+    const json_summary_table_data = [{"CPU %": 22.01, "Lat Mean": 5728.79, "Lat P50": 4678.89, "Lat P75": 5616.0, "Lat P90": 6870.0, "Lat P99": 10958.56, "Mem MB": 25.61, "REQ Total": 10000.0, "RPS Mean": 8794.75, "RPS P50": 10069.66, "RPS P75": 11104.09, "RPS P90": 11987.61, "RPS P99": 13456.59, "Req 2xx": 10000.0, "name": "asp_net_core"}, {"CPU %": 92.1, "Lat Mean": 25475.25, "Lat P50": 22428.78, "Lat P75": 24603.67, "Lat P90": 33483.44, "Lat P99": 43531.33, "Mem MB": 56.35, "REQ Total": 10000.0, "RPS Mean": 1961.53, "RPS P50": 2155.79, "RPS P75": 2369.31, "RPS P90": 2457.16, "RPS P99": 2543.17, "Req 2xx": 10000.0, "name": "astro_js"}, {"CPU %": 79.35, "Lat Mean": 31299.77, "Lat P50": 31053.5, "Lat P75": 31306.75, "Lat P90": 31901.25, "Lat P99": 37119.5, "Mem MB": 50.95, "REQ Total": 10000.0, "RPS Mean": 1654.84, "RPS P50": 1645.88, "RPS P75": 1670.87, "RPS P90": 1693.76, "RPS P99": 1737.04, "Req 2xx": 10000.0, "name": "django"}, {"CPU %": 23.01, "Lat Mean": 4987.18, "Lat P50": 4488.12, "Lat P75": 4560.12, "Lat P90": 5266.38, "Lat P99": 9534.5, "Mem MB": 3.26, "REQ Total": 10000.0, "RPS Mean": 10065.37, "RPS P50": 10517.74, "RPS P75": 10567.59, "RPS P90": 10639.84, "RPS P99": 10921.87, "Req 2xx": 10000.0, "name": "drogon"}, {"CPU %": 395.01, "Lat Mean": 1090118.4, "Lat P50": 1073823.0, "Lat P75": 1126057.88, "Lat P90": 1176740.5, "Lat P99": 2000788.88, "Mem MB": 958.26, "REQ Total": 10000.0, "RPS Mean": 45.83, "RPS P50": 49.11, "RPS P75": 51.9, "RPS P90": 102.17, "RPS P99": 201.47, "Req 2xx": 9779.62, "name": "laravel"}, {"CPU %": 115.12, "Lat Mean": 34777.09, "Lat P50": 31813.5, "Lat P75": 35133.25, "Lat P90": 43876.25, "Lat P99": 64177.75, "Mem MB": 117.06, "REQ Total": 10000.0, "RPS Mean": 1440.95, "RPS P50": 1500.12, "RPS P75": 1701.82, "RPS P90": 1853.48, "RPS P99": 2061.24, "Req 2xx": 10000.0, "name": "next_js"}, {"CPU %": 95.99, "Lat Mean": 175541.47, "Lat P50": 10307.38, "Lat P75": 11148.5, "Lat P90": 1435368.5, "Lat P99": 1667381.62, "Mem MB": 118.18, "REQ Total": 10000.0, "RPS Mean": 278.69, "RPS P50": 296.68, "RPS P75": 306.19, "RPS P90": 350.64, "RPS P99": 502.42, "Req 2xx": 9960.75, "name": "ruby_on_rails"}, {"CPU %": 60.98, "Lat Mean": 9713.69, "Lat P50": 6213.25, "Lat P75": 9431.25, "Lat P90": 16221.75, "Lat P99": 53856.88, "Mem MB": 122.68, "REQ Total": 10000.0, "RPS Mean": 5160.59, "RPS P50": 4909.8, "RPS P75": 7155.89, "RPS P90": 8506.85, "RPS P99": 9627.1, "Req 2xx": 10000.0, "name": "spring_boot"}];
+    render_table(json_summary_table_data, "#json-summary-table", 2)
+    
+
+    {
+        const x_labels = ["raw", "sql", "json"];
+        const curves = [[5214.01, 12211.47, 5728.79], [27072.46, 311963.79, 25475.25], [30072.08, 799668.34, 31299.77], [9380.96, 3435.32, 4987.18], [1084290.78, 1424313.21, 1090118.4], [36022.11, 324428.73, 34777.09], [176806.71, 182690.86, 175541.47], [9040.95, 27828.45, 9713.69]];
+        const curve_labels = ["asp_net_core", "astro_js", "django", "drogon", "laravel", "next_js", "ruby_on_rails", "spring_boot"];
+        const main_x_label = "Test Modes"
+        const main_y_label = "Latency Mean (us)"
+        render_curves_graph("#mc-latency-graph", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+
+    {
+        const x_labels = ["raw", "sql", "json"];
+        const curves = [[27.71, 93.23, 22.01], [94.24, 260.58, 92.1], [74.38, 58.51, 79.35], [9.94, 20.23, 23.01], [395.22, 367.56, 395.01], [121.29, 233.55, 115.12], [96.65, 93.94, 95.99], [35.88, 259.54, 60.98]];
+        const curve_labels = ["asp_net_core", "astro_js", "django", "drogon", "laravel", "next_js", "ruby_on_rails", "spring_boot"];
+        const main_x_label = "Test Modes"
+        const main_y_label = "CPU %"
+        render_curves_graph("#mc-cpu-graph", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+
+    {
+        const x_labels = ["raw", "sql", "json"];
+        const curves = [[27.94, 51.62, 25.61], [59.5, 67.23, 56.35], [50.9, 53.78, 50.95], [3.06, 4.31, 3.26], [959.58, 1133.79, 958.26], [115.76, 171.91, 117.06], [119.63, 124.13, 118.18], [117.89, 225.79, 122.68]];
+        const curve_labels = ["asp_net_core", "astro_js", "django", "drogon", "laravel", "next_js", "ruby_on_rails", "spring_boot"];
+        const main_x_label = "Test Modes"
+        const main_y_label = "Mem MB"
+        render_curves_graph("#mc-memory-graph", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+
+    {
+        const x_labels = ["raw", "sql", "json"];
+        const curves = [[9639.29, 4160.59, 8794.75], [1845.92, 160.34, 1961.53], [1709.41, 62.45, 1654.84], [5328.08, 14649.96, 10065.37], [46.07, 35.07, 45.83], [1391.68, 154.08, 1440.95], [275.96, 267.79, 278.69], [5568.39, 1808.05, 5160.59]];
+        const curve_labels = ["asp_net_core", "astro_js", "django", "drogon", "laravel", "next_js", "ruby_on_rails", "spring_boot"];
+        const main_x_label = "Test Modes"
+        const main_y_label = "RPS Mean"
+        render_curves_graph("#mc-rps-graph", curves, x_labels, curve_labels, main_x_label, main_y_label);
+    }
+
+
+</script>
+
+
+
+</body>
+</html>

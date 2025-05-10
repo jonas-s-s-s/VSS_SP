@@ -9,11 +9,17 @@ run_test() {
   local test_json="$1"
   local test_name="$2"
 
+  echo "STARTED $test_name" >> "$LOG_FILE"
+  echo "Current time: $(date '+%Y-%m-%d %H:%M:%S')" >> "$LOG_FILE"
+
+  # Run the benchmark
   echo "$test_json" > "$JSON_FILE"
   docker compose -f "$CLIENT_COMPOSE_FILE" up --build
 
   echo "FINISHED $test_name" >> "$LOG_FILE"
   echo "Current time: $(date '+%Y-%m-%d %H:%M:%S')" >> "$LOG_FILE"
+  echo "========================================================="
+
   docker compose -f "$CLIENT_COMPOSE_FILE" down
 
   # Wait 5 min
