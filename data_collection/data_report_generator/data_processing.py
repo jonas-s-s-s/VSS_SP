@@ -23,14 +23,14 @@ def get_framework_data():
     # A measurement contains fields (columns)
 
     # Get all measurement (framework) names from the DB
-    measurements = db.get_benchmark_measurements_names(BUCKET)
+    measurements = db.get_benchmark_measurements_names(BUCKET, START_TIME, STOP_TIME)
 
     return {
         "time_range": _get_time_range_summary(db),
         "client_hw_info": db.get_last_client_hw_info(BUCKET, START_TIME, STOP_TIME),
         "server_hw_info": db.get_last_server_hw_info(BUCKET, START_TIME, STOP_TIME),
         "measurements": measurements,
-        "total_run_count": db.get_total_uuid_count(BUCKET),
+        "total_run_count": db.get_total_test_case_count(BUCKET, START_TIME, STOP_TIME),
         "measurements_data": {
             m: _process_measurement(db, m) for m in measurements
         }
@@ -77,7 +77,7 @@ def _process_measurement(db, measurement):
     print("Modes:", modes)
     return {
         # How many test cases were executed for this framework (each has its own UUID)
-        "uuid_count": db.get_measurement_uuid_count(BUCKET, measurement),
+        "uuid_count": db.get_test_case_count_per_measurement(BUCKET, measurement, START_TIME, STOP_TIME),
         # Names of all test case types that were executed for this framework
         "test_cases": test_cases,
         # All modes of this framework (i.e. raw, sql, ...)

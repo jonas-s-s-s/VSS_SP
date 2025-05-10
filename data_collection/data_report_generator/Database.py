@@ -20,15 +20,21 @@ class Database:
     def ping_db(self):
         return self.client.ping()
 
-    def get_benchmark_measurements_names(self, bucket):
+    def get_benchmark_measurements_names(self, bucket, start_time, stop_time):
         result = []
-        query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bucket}")'
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: {start_time}, stop: {stop_time})
+          |> keep(columns: ["_measurement"])
+          |> unique(column: "_measurement")
+          |> group()
+        '''
 
         tables = self.query_api.query(query=query)
         # Query returns a list of tables, each table contains some records (rows)
         for table in tables:
             for record in table.records:
-                measurement_name = record['_value']
+                measurement_name = record.values.get("_measurement")
                 if measurement_name not in NON_FRAMEWORK_MEASUREMENTS:
                     result.append(measurement_name)
         return result
@@ -47,6 +53,30 @@ class Database:
             for record in table.records:
                 result.append(record['_value'])
         return result
+
+    def get_total_test_case_count(self, bucket, start_time, stop_time):
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: {start_time}, stop: {stop_time})
+          |> filter(fn: (r) => r["_measurement"] == "test_case_start_times")
+          |> group()
+          |> keep(columns: ["test_case_uuid"])
+          |> count(column: "test_case_uuid")
+        '''
+        tables = self.query_api.query(query=query)
+        return tables[0].records[0].values["test_case_uuid"]
+
+    def get_test_case_count_per_measurement(self, bucket, measurement, start_time, stop_time):
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: {start_time}, stop: {stop_time})
+          |> filter(fn: (r) => r["_measurement"] == "test_case_start_times" and r["_value"] == "{measurement}")
+          |> group()
+          |> keep(columns: ["test_case_uuid"])
+          |> count(column: "test_case_uuid")
+        '''
+        tables = self.query_api.query(query=query)
+        return tables[0].records[0].values["test_case_uuid"]
 
     def get_field_mean(self, bucket, measurement, field, start_time, stop_time):
         query = f'''
@@ -197,24 +227,6 @@ class Database:
             for record in table.records:
                 resulting_metrics.append(record.values)
         return resulting_metrics
-
-    def get_total_uuid_count(self, bucket):
-        query = f'''
-        import "influxdata/influxdb/schema"
-        schema.measurementTagValues(bucket: "{bucket}", measurement:"test_case_start_times", tag: "test_case_uuid") 
-        |> count()
-        '''
-        tables = self.query_api.query(query=query)
-        return tables[0].records[0].values["_value"]
-
-    def get_measurement_uuid_count(self, bucket, measurement):
-        query = f'''
-        import "influxdata/influxdb/schema"
-        schema.measurementTagValues(bucket: "{bucket}", measurement:"{measurement}", tag: "test_case_uuid") 
-        |> count()
-        '''
-        tables = self.query_api.query(query=query)
-        return tables[0].records[0].values["_value"]
 
     def get_oldest_record(self, bucket, start_time, stop_time):
         query = f'''
