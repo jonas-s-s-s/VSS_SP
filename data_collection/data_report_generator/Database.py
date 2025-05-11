@@ -266,9 +266,25 @@ class Database:
             "value": tables[0].records[0].values["_value"]
         }
 
+    def get_last_hw_info(self, bucket, measurement):
+        query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: 2000-09-09T10:00:00+02:00, stop: 2099-05-09T10:00:00+02:00)
+          |> filter(fn: (r) => r["_measurement"] == "{measurement}")
+          |> filter(fn: (r) => r["_field"] == "info_string")
+          |> last()
+        '''
+        tables = self.query_api.query(query=query)
+        return {
+            "time": tables[0].records[0].values["_time"].strftime('%Y-%m-%d %H:%M:%S %Z%z'),
+            "value": tables[0].records[0].values["_value"]
+        }
+
     def get_last_server_hw_info(self, bucket, start_time, stop_time):
         try:
-            return self.get_last_hw_info(bucket, "server_hw_info", start_time, stop_time)
+            # At the moment don't use time range, as server uploads its HW info only once when it starts
+            # Therefore this info can be outside the time range in which the benchmark took place
+            return self.get_last_hw_info(bucket, "server_hw_info")
         except:
             return {"time": "NaN", "value": "No Server HW Data"}
 
