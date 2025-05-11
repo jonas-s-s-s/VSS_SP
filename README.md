@@ -45,4 +45,4 @@ The project consists of the following three parts:
 ---
 
 ## Sample Output
-- https://jonas-s-s-s.github.io/VSS_SP/ includes four auto-generated benchmark reports 
+- https://jonas-s-s-s.github.io/Web-Frameworks-Benchmark/ includes four auto-generated benchmark reports 
